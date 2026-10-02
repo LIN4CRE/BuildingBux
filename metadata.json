@@ -1,0 +1,6 @@
+{
+  "name": "BloxMonetize - Roblox Game Monetization & £ DevEx Engine",
+  "description": "Comprehensive guide, economy simulator, Luau code generator, and GBP (£) DevEx cashout calculator for earning real money on Roblox.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
