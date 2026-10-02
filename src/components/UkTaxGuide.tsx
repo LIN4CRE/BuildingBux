@@ -339,6 +339,43 @@ export const UkTaxGuide: React.FC = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Official Portals Link Strip */}
+              <div className="bg-[#0e1420] border border-slate-800 rounded-lg p-4 space-y-2.5">
+                <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                  <ExternalLink className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Official GOV.UK &amp; Tipalti Portals</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <a
+                    href="https://www.gov.uk/register-for-self-assessment"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2.5 bg-[#0b0f17] hover:bg-slate-900 border border-slate-800 rounded text-xs text-slate-300 flex items-center justify-between group"
+                  >
+                    <span>GOV.UK Self Assessment</span>
+                    <ExternalLink className="w-3 h-3 text-slate-500 group-hover:text-emerald-400" />
+                  </a>
+                  <a
+                    href="https://www.gov.uk/guidance/tax-free-allowances-on-property-and-trading-income"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2.5 bg-[#0b0f17] hover:bg-slate-900 border border-slate-800 rounded text-xs text-slate-300 flex items-center justify-between group"
+                  >
+                    <span>£1,000 Trading Allowance</span>
+                    <ExternalLink className="w-3 h-3 text-slate-500 group-hover:text-emerald-400" />
+                  </a>
+                  <a
+                    href="https://suppliers.tipalti.com/roblox"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2.5 bg-[#0b0f17] hover:bg-slate-900 border border-slate-800 rounded text-xs text-slate-300 flex items-center justify-between group"
+                  >
+                    <span>Tipalti Roblox Supplier</span>
+                    <ExternalLink className="w-3 h-3 text-slate-500 group-hover:text-emerald-400" />
+                  </a>
+                </div>
+              </div>
             </div>
           )}
         </>

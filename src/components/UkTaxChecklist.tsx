@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircle2, Circle, AlertTriangle, ExternalLink, HelpCircle, RotateCcw, ShieldCheck, ChevronDown, ChevronUp } from 'lucide-react';
+import { CheckCircle2, Circle, AlertTriangle, ExternalLink, HelpCircle, RotateCcw, ShieldCheck, ChevronDown, ChevronUp, Download, Printer, FileText } from 'lucide-react';
+import { sounds } from '../utils/audio';
 
 interface ChecklistItem {
   id: string;
@@ -113,6 +114,8 @@ export const UkTaxChecklist: React.FC = () => {
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [developerName, setDeveloperName] = useState<string>('Roblox Developer');
+  const [taxYear, setTaxYear] = useState<string>('2024/2025');
 
   useEffect(() => {
     try {
@@ -123,9 +126,14 @@ export const UkTaxChecklist: React.FC = () => {
   }, [completedIds]);
 
   const toggleItem = (id: string) => {
-    setCompletedIds((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
-    );
+    sounds.playClick();
+    setCompletedIds((prev) => {
+      const updated = prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id];
+      if (!prev.includes(id)) {
+        sounds.playSuccess();
+      }
+      return updated;
+    });
   };
 
   const handleReset = () => {
@@ -144,11 +152,145 @@ export const UkTaxChecklist: React.FC = () => {
   const totalCount = HMRC_CHECKLIST_ITEMS.length;
   const percentCompleted = Math.round((completedCount / totalCount) * 100);
 
+  // Generate printable formatted tax report HTML
+  const generateReportHtml = () => {
+    const dateStr = new Date().toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+
+    let itemsHtml = '';
+    HMRC_CHECKLIST_ITEMS.forEach((item, index) => {
+      const isDone = completedIds.includes(item.id);
+      itemsHtml += `
+        <tr style="border-bottom: 1px solid #e2e8f0; ${isDone ? 'background-color: #f0fdf4;' : ''}">
+          <td style="padding: 10px; font-weight: 600; width: 40px; text-align: center;">
+            ${isDone ? '<span style="color: #16a34a; font-size: 16px;">✓</span>' : '<span style="color: #94a3b8;">○</span>'}
+          </td>
+          <td style="padding: 10px;">
+            <div style="font-weight: 700; color: #0f172a; font-size: 13px;">${item.title}</div>
+            <div style="font-size: 11px; color: #475569; margin-top: 2px;">${item.summary}</div>
+            ${item.deadline ? `<div style="font-size: 10px; color: #b45309; font-weight: 600; margin-top: 3px;">Deadline: ${item.deadline}</div>` : ''}
+          </td>
+          <td style="padding: 10px; font-size: 11px; color: #64748b; width: 140px;">
+            ${item.category}
+          </td>
+          <td style="padding: 10px; font-weight: 700; font-size: 12px; width: 100px; text-align: right; color: ${isDone ? '#16a34a' : '#64748b'};">
+            ${isDone ? 'COMPLETED' : 'PENDING'}
+          </td>
+        </tr>
+      `;
+    });
+
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>HMRC Self Assessment Compliance Audit - ${developerName}</title>
+        <meta charset="utf-8">
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 40px; color: #0f172a; line-height: 1.5; }
+          .header { border-bottom: 2px solid #0f172a; padding-bottom: 16px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-end; }
+          h1 { margin: 0; font-size: 22px; color: #0f172a; }
+          .subtitle { color: #64748b; font-size: 12px; margin-top: 4px; }
+          .meta-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; margin-bottom: 24px; display: flex; justify-content: space-between; font-size: 12px; }
+          .progress-bar-container { background: #e2e8f0; height: 10px; border-radius: 5px; overflow: hidden; margin-top: 8px; }
+          .progress-bar-fill { background: #16a34a; height: 100%; width: ${percentCompleted}%; }
+          table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+          th { text-align: left; background: #f1f5f9; padding: 10px; font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #cbd5e1; }
+          .footer { margin-top: 30px; font-size: 10px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 12px; }
+          @media print {
+            body { margin: 20px; }
+            .no-print { display: none; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div>
+            <h1>UK HMRC Self Assessment Compliance Record</h1>
+            <div class="subtitle">Roblox Developer Exchange (DevEx) Sole Trader Tax Audit Documentation</div>
+          </div>
+          <div style="text-align: right; font-size: 11px; color: #64748b;">
+            <div>Date Generated: <strong>${dateStr}</strong></div>
+            <div>Tax Year: <strong>${taxYear}</strong></div>
+          </div>
+        </div>
+
+        <div class="meta-box">
+          <div>
+            <div>Developer / Creator: <strong>${developerName}</strong></div>
+            <div style="margin-top: 4px;">Business Type: <strong>Sole Trader (Video Game Development / DevEx)</strong></div>
+          </div>
+          <div style="text-align: right; min-width: 180px;">
+            <div>Audit Status: <strong>${completedCount} / ${totalCount} Steps Completed (${percentCompleted}%)</strong></div>
+            <div class="progress-bar-container">
+              <div class="progress-bar-fill"></div>
+            </div>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 40px; text-align: center;">Status</th>
+              <th>Requirement & Action Item</th>
+              <th style="width: 140px;">Category</th>
+              <th style="width: 100px; text-align: right;">State</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemsHtml}
+          </tbody>
+        </table>
+
+        <div style="margin-top: 24px; padding: 12px; background: #fefce8; border: 1px solid #fef08a; border-radius: 6px; font-size: 11px; color: #713f12;">
+          <strong>Official Record Notice:</strong> Keep this document along with your Tipalti DevEx payout receipts and UK bank statements. HM Revenue and Customs requires sole traders to maintain financial transaction records for a minimum of 5 years after 31 January of the relevant tax year.
+        </div>
+
+        <div class="footer">
+          Generated via BloxMonetize Studio · UK Form W-8BEN &amp; HMRC Sole Trader Compliance Framework.
+        </div>
+
+        <script>
+          window.onload = function() { window.print(); }
+        </script>
+      </body>
+      </html>
+    `;
+  };
+
+  // Export PDF via Print Preview dialog
+  const handlePrintPdf = () => {
+    sounds.playClick();
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(generateReportHtml());
+      printWindow.document.close();
+    }
+  };
+
+  // Download raw HTML/PDF backup file
+  const handleDownloadReport = () => {
+    sounds.playSuccess();
+    const htmlContent = generateReportHtml();
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `hmrc-tax-checklist-${taxYear.replace('/', '-')}-${developerName.toLowerCase().replace(/\s+/g, '-')}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="bg-[#101726] border border-slate-800 rounded-xl p-6 space-y-6">
-      {/* Header with Progress Bar */}
+      {/* Header with Progress Bar & Export Action */}
       <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-800">
           <div>
             <div className="flex items-center gap-2 text-xs font-mono text-emerald-400 mb-1">
               <ShieldCheck className="w-4 h-4" />
@@ -158,19 +300,29 @@ export const UkTaxChecklist: React.FC = () => {
               UK Developer Self-Assessment Readiness Checklist
             </h2>
             <p className="text-xs text-slate-400 mt-0.5">
-              Step-by-step audit to ensure your Roblox DevEx earnings comply with UK tax law and avoid HMRC penalties.
+              Audit your Roblox DevEx earnings against UK tax law, track registration deadlines, and export an official PDF audit record.
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="text-right">
-              <div className="text-xs font-mono font-bold text-emerald-400">
-                {completedCount} of {totalCount} Completed
-              </div>
-              <div className="text-[11px] text-slate-400">
-                {percentCompleted}% HMRC Ready
-              </div>
-            </div>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <button
+              onClick={handlePrintPdf}
+              className="px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm"
+              title="Prints or saves this checklist as an official PDF document"
+            >
+              <Printer className="w-3.5 h-3.5" />
+              <span>Export Formatted PDF</span>
+            </button>
+
+            <button
+              onClick={handleDownloadReport}
+              className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white text-xs font-medium rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
+              title="Download HTML tax backup"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Download Record</span>
+            </button>
+
             <button
               onClick={handleReset}
               className="p-1.5 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
@@ -181,15 +333,47 @@ export const UkTaxChecklist: React.FC = () => {
           </div>
         </div>
 
+        {/* Developer Customization Inputs for PDF Export */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-[#0b0f17] border border-slate-800 p-3 rounded-lg text-xs">
+          <div className="flex items-center gap-2">
+            <span className="text-slate-400 whitespace-nowrap">Developer Name / Handle:</span>
+            <input
+              type="text"
+              value={developerName}
+              onChange={(e) => setDeveloperName(e.target.value)}
+              className="bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-white text-xs font-medium w-full focus:outline-none focus:border-emerald-500"
+              placeholder="e.g. John Doe / BloxDev123"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-slate-400 whitespace-nowrap">UK Tax Year:</span>
+            <select
+              value={taxYear}
+              onChange={(e) => setTaxYear(e.target.value)}
+              className="bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-white text-xs font-mono font-medium focus:outline-none focus:border-emerald-500 cursor-pointer"
+            >
+              <option value="2024/2025">2024/2025 (Current)</option>
+              <option value="2025/2026">2025/2026</option>
+              <option value="2026/2027">2026/2027</option>
+            </select>
+          </div>
+        </div>
+
         {/* Visual Progress Bar */}
         <div className="space-y-1.5">
+          <div className="flex justify-between items-center text-xs">
+            <span className="text-slate-400 font-medium">Compliance Progress</span>
+            <span className="font-mono text-emerald-400 font-bold">
+              {completedCount} of {totalCount} Completed ({percentCompleted}%)
+            </span>
+          </div>
           <div className="w-full bg-slate-900 h-2 rounded-full overflow-hidden border border-slate-800">
             <div
               className="bg-emerald-400 h-full transition-all duration-300 rounded-full"
               style={{ width: `${percentCompleted}%` }}
             />
           </div>
-          <div className="flex justify-between text-[11px] text-slate-500 font-mono">
+          <div className="flex justify-between text-[10px] text-slate-500 font-mono">
             <span>Trading Allowance (£1k)</span>
             <span>Registration (5 Oct)</span>
             <span>Tax Return (31 Jan)</span>

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { Users, Coins, Sparkles, TrendingUp, Calendar, Clock, HelpCircle, BarChart3, Sliders, Layers } from 'lucide-react';
+import { Users, Coins, Sparkles, TrendingUp, Calendar, Clock, HelpCircle, BarChart3, Sliders, Layers, ArrowUpRight, TrendingDown, ExternalLink } from 'lucide-react';
+import { RobuxIcon, SterlingCoinIcon, DevExVaultIcon, RobuxGoldIcon } from './Icons';
+import { sounds } from '../utils/audio';
 
 export const EconomySimulator: React.FC = () => {
   // Mode switcher: 'arpdau' (DAU & ARPDAU Model) vs 'funnel' (CCU & Spender Funnel Model)
@@ -21,6 +23,11 @@ export const EconomySimulator: React.FC = () => {
   const [premiumShare, setPremiumShare] = useState<number>(18); // 18% of players have Roblox Premium
   const [avgSessionMins, setAvgSessionMins] = useState<number>(16); // Average session length in minutes
 
+  // 12-Month Projection Parameters
+  const [monthlyGrowthRate, setMonthlyGrowthRate] = useState<number>(10); // 10% monthly user growth
+  const [monthlyChurnRate, setMonthlyChurnRate] = useState<number>(4); // 4% monthly player churn/decay
+  const [hoveredMonth, setHoveredMonth] = useState<number | null>(null);
+
   // --- MODEL 1: DAU + ARPDAU CALCULATIONS ---
   const arpdauDailyGrossRobux = Math.round(dauInput * arpdauRobux);
   const arpdauDailyNetRobux = Math.round(arpdauDailyGrossRobux * 0.7); // 70% creator share
@@ -28,7 +35,6 @@ export const EconomySimulator: React.FC = () => {
   const arpdauMonthlyNetRobux = arpdauDailyNetRobux * 30;
   const arpdauMonthlyDevExUsd = arpdauMonthlyNetRobux * DEVEX_RATE;
   const arpdauMonthlyDevExGbp = arpdauMonthlyDevExUsd * usdToGbpRate;
-  const arpdauAnnualDevExGbp = arpdauMonthlyDevExGbp * 12;
 
   // --- MODEL 2: CCU FUNNEL CALCULATIONS ---
   const funnelDau = ccu * dauRatio;
@@ -42,7 +48,39 @@ export const EconomySimulator: React.FC = () => {
   const funnelMonthlyNetRobux = funnelDailyTotalNetRobux * 30;
   const funnelMonthlyDevExUsd = funnelMonthlyNetRobux * DEVEX_RATE;
   const funnelMonthlyDevExGbp = funnelMonthlyDevExUsd * usdToGbpRate;
-  const funnelAnnualDevExGbp = funnelMonthlyDevExGbp * 12;
+
+  // Active Base Monthly Net Robux
+  const activeBaseMonthlyNetRobux = calculationMode === 'arpdau' ? arpdauMonthlyNetRobux : funnelMonthlyNetRobux;
+
+  // 12-Month Projection Array with Compounding Growth & Churn
+  const netCompoundRate = (monthlyGrowthRate - monthlyChurnRate) / 100;
+  const monthlyProjections = Array.from({ length: 12 }, (_, i) => {
+    const monthIndex = i + 1;
+    // Compounded net growth multiplier: (1 + netGrowth)^i
+    const multiplier = Math.pow(1 + netCompoundRate, i);
+    const projectedNetRobux = Math.round(activeBaseMonthlyNetRobux * multiplier);
+    const projectedGrossRobux = Math.round(projectedNetRobux / 0.7);
+    const projectedDevExUsd = projectedNetRobux * DEVEX_RATE;
+    const projectedDevExGbp = projectedDevExUsd * usdToGbpRate;
+
+    return {
+      monthIndex,
+      monthLabel: `M${monthIndex}`,
+      monthName: `Month ${monthIndex}`,
+      projectedNetRobux,
+      projectedGrossRobux,
+      projectedDevExUsd,
+      projectedDevExGbp,
+    };
+  });
+
+  // Cumulative 12-Month Totals
+  const cumulativeNetRobux = monthlyProjections.reduce((sum, m) => sum + m.projectedNetRobux, 0);
+  const cumulativeDevExUsd = cumulativeNetRobux * DEVEX_RATE;
+  const cumulativeDevExGbp = cumulativeDevExUsd * usdToGbpRate;
+
+  // Max value for scaling SVG chart bars
+  const maxProjectedNetRobux = Math.max(...monthlyProjections.map((m) => m.projectedNetRobux), 1);
 
   // Genre ARPDAU Benchmarks
   const arpdauPresets = [
@@ -69,7 +107,10 @@ export const EconomySimulator: React.FC = () => {
           {/* Model Switcher */}
           <div className="flex items-center p-1 bg-slate-900 border border-slate-800 rounded-lg text-xs self-start md:self-auto">
             <button
-              onClick={() => setCalculationMode('arpdau')}
+              onClick={() => {
+                sounds.playClick();
+                setCalculationMode('arpdau');
+              }}
               className={`px-3 py-1.5 rounded font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
                 calculationMode === 'arpdau'
                   ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
@@ -80,7 +121,10 @@ export const EconomySimulator: React.FC = () => {
               <span>DAU & ARPDAU Engine</span>
             </button>
             <button
-              onClick={() => setCalculationMode('funnel')}
+              onClick={() => {
+                sounds.playClick();
+                setCalculationMode('funnel');
+              }}
               className={`px-3 py-1.5 rounded font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
                 calculationMode === 'funnel'
                   ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
@@ -116,9 +160,9 @@ export const EconomySimulator: React.FC = () => {
                   className="w-full bg-[#0b0f17] border border-slate-700 rounded-lg px-3 py-2 text-white font-mono text-sm focus:outline-none focus:border-emerald-500"
                 />
                 <div className="flex justify-between text-[10px] text-slate-500 font-mono">
-                  <button onClick={() => setDauInput(5000)} className="hover:text-emerald-400">5k (Small)</button>
-                  <button onClick={() => setDauInput(25000)} className="hover:text-emerald-400">25k (Growing)</button>
-                  <button onClick={() => setDauInput(100000)} className="hover:text-emerald-400">100k (Front Page)</button>
+                  <button onClick={() => setDauInput(5000)} className="hover:text-emerald-400 cursor-pointer">5k (Small)</button>
+                  <button onClick={() => setDauInput(25000)} className="hover:text-emerald-400 cursor-pointer">25k (Growing)</button>
+                  <button onClick={() => setDauInput(100000)} className="hover:text-emerald-400 cursor-pointer">100k (Front Page)</button>
                 </div>
               </div>
 
@@ -175,7 +219,10 @@ export const EconomySimulator: React.FC = () => {
                 {arpdauPresets.map((preset) => (
                   <button
                     key={preset.name}
-                    onClick={() => setArpdauRobux(preset.arpdau)}
+                    onClick={() => {
+                      sounds.playCoin();
+                      setArpdauRobux(preset.arpdau);
+                    }}
                     className={`p-2.5 rounded-lg border text-left transition-all cursor-pointer ${
                       Math.abs(arpdauRobux - preset.arpdau) < 0.01
                         ? 'bg-slate-800 border-emerald-500/60 text-white'
@@ -277,6 +324,142 @@ export const EconomySimulator: React.FC = () => {
         )}
       </div>
 
+      {/* -------------------- 12-MONTH CHART VISUALIZATION & GROWTH MODEL -------------------- */}
+      <div className="bg-[#101726] border border-slate-800 rounded-xl p-6 space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+          <div>
+            <div className="flex items-center gap-2 text-xs font-mono text-emerald-400 mb-1">
+              <TrendingUp className="w-3.5 h-3.5" />
+              <span>12-Month Growth & Retention Simulation</span>
+            </div>
+            <h2 className="text-lg font-bold text-white font-display">
+              Projected 12-Month Revenue Curve
+            </h2>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Simulates compounding live-ops updates, viral growth, and player churn over a 12-month lifecycle.
+            </p>
+          </div>
+
+          <div className="text-right">
+            <span className="text-xs text-slate-400 block">12-Month Cumulative DevEx Payout</span>
+            <span className="text-2xl font-black font-mono text-emerald-300 tabular-nums">
+              £{cumulativeDevExGbp.toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+            </span>
+            <span className="text-[11px] text-slate-500 font-mono block">
+              ${cumulativeDevExUsd.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} USD ({cumulativeNetRobux.toLocaleString()} Net R$)
+            </span>
+          </div>
+        </div>
+
+        {/* Growth & Churn Sliders */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-[#0b0f17] border border-slate-800 p-4 rounded-lg">
+          <div className="space-y-1.5">
+            <div className="flex justify-between text-xs">
+              <span className="text-slate-300 font-medium flex items-center gap-1.5">
+                <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+                Monthly User Growth Rate (Viral/Updates)
+              </span>
+              <span className="font-mono text-emerald-400 font-bold">+{monthlyGrowthRate}% / mo</span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="40"
+              step="1"
+              value={monthlyGrowthRate}
+              onChange={(e) => setMonthlyGrowthRate(parseInt(e.target.value))}
+              className="w-full accent-emerald-400 bg-slate-800 h-1.5 rounded-lg appearance-none cursor-pointer"
+            />
+            <div className="flex justify-between text-[10px] text-slate-500 font-mono">
+              <span>0% (Flat)</span>
+              <span>10% (Typical updates)</span>
+              <span>40% (Viral breakout)</span>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <div className="flex justify-between text-xs">
+              <span className="text-slate-300 font-medium flex items-center gap-1.5">
+                <TrendingDown className="w-3.5 h-3.5 text-rose-400" />
+                Monthly Player Churn & Fatigue Decay
+              </span>
+              <span className="font-mono text-rose-400 font-bold">-{monthlyChurnRate}% / mo</span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="25"
+              step="1"
+              value={monthlyChurnRate}
+              onChange={(e) => setMonthlyChurnRate(parseInt(e.target.value))}
+              className="w-full accent-rose-400 bg-slate-800 h-1.5 rounded-lg appearance-none cursor-pointer"
+            />
+            <div className="flex justify-between text-[10px] text-slate-500 font-mono">
+              <span>0% (Zero loss)</span>
+              <span>4% (High retention)</span>
+              <span>25% (High burnout)</span>
+            </div>
+          </div>
+        </div>
+
+        {/* The 12-Month Interactive Bar Chart */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-xs text-slate-400">
+            <span>Monthly Net Cashout Projections (Hover over any bar)</span>
+            <span className="font-mono text-emerald-400 font-medium">
+              Net Compound Rate: {netCompoundRate >= 0 ? `+${(netCompoundRate * 100).toFixed(1)}%` : `${(netCompoundRate * 100).toFixed(1)}%`} / mo
+            </span>
+          </div>
+
+          {/* SVG Visual Bars Container */}
+          <div className="bg-[#070b12] border border-slate-800/80 rounded-xl p-4 pt-6">
+            <div className="h-56 flex items-end justify-between gap-1.5 sm:gap-3">
+              {monthlyProjections.map((m, idx) => {
+                const heightPercent = Math.max(8, Math.round((m.projectedNetRobux / maxProjectedNetRobux) * 100));
+                const isHovered = hoveredMonth === idx;
+
+                return (
+                  <div
+                    key={m.monthIndex}
+                    onMouseEnter={() => setHoveredMonth(idx)}
+                    onMouseLeave={() => setHoveredMonth(null)}
+                    className="flex-1 flex flex-col items-center h-full justify-end group cursor-pointer relative"
+                  >
+                    {/* Tooltip on Hover */}
+                    {isHovered && (
+                      <div className="absolute -top-16 left-1/2 -translate-x-1/2 bg-slate-900 border border-emerald-500/60 p-2 rounded-lg text-center shadow-xl shadow-black z-30 pointer-events-none whitespace-nowrap">
+                        <div className="text-[10px] font-mono text-slate-400">{m.monthName}</div>
+                        <div className="text-xs font-bold font-mono text-emerald-300">
+                          £{m.projectedDevExGbp.toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                        </div>
+                        <div className="text-[9px] font-mono text-slate-400">
+                          {m.projectedNetRobux.toLocaleString()} Net R$
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Bar */}
+                    <div
+                      className={`w-full rounded-t-md transition-all duration-300 ${
+                        isHovered
+                          ? 'bg-gradient-to-t from-emerald-500 to-teal-300 shadow-lg shadow-emerald-500/30'
+                          : 'bg-gradient-to-t from-emerald-600/80 to-teal-500/90 group-hover:from-emerald-500 group-hover:to-teal-400'
+                      }`}
+                      style={{ height: `${heightPercent}%` }}
+                    />
+
+                    {/* X-Axis Label */}
+                    <div className="text-[10px] font-mono text-slate-500 group-hover:text-emerald-400 mt-2">
+                      {m.monthLabel}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Primary Forecast Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Card 1: Daily Revenue */}
@@ -284,7 +467,7 @@ export const EconomySimulator: React.FC = () => {
           <div className="flex items-center justify-between text-xs text-slate-400">
             <span className="flex items-center gap-1.5 font-semibold text-slate-300">
               <Clock className="w-3.5 h-3.5 text-emerald-400" />
-              Daily Earnings
+              Daily Earnings (Base)
             </span>
             <span className="text-[11px] font-mono text-slate-500">
               {calculationMode === 'arpdau' ? `${dauInput.toLocaleString()} Daily Players` : '24-hour cycle'}
@@ -311,7 +494,7 @@ export const EconomySimulator: React.FC = () => {
               </span>
             </div>
             <div className="flex justify-between text-slate-400">
-              <span>Roblox 30% Marketplace Cut:</span>
+              <span>Roblox 30% Platform Cut:</span>
               <span className="font-mono text-rose-400">
                 -{((calculationMode === 'arpdau' ? arpdauDailyGrossRobux : dailyGrossGameRobux) * 0.3).toFixed(0)} R$
               </span>
@@ -325,7 +508,7 @@ export const EconomySimulator: React.FC = () => {
           <div className="flex items-center justify-between text-xs">
             <span className="flex items-center gap-1.5 font-bold text-emerald-300">
               <Calendar className="w-3.5 h-3.5" />
-              Projected Monthly DevEx (£)
+              Month 1 DevEx Baseline (£)
             </span>
             <span className="text-[10px] font-mono bg-emerald-900/60 text-emerald-300 px-2 py-0.5 rounded border border-emerald-800/50">
               30 Days
@@ -358,47 +541,81 @@ export const EconomySimulator: React.FC = () => {
           </div>
         </div>
 
-        {/* Card 3: Annualized Run-Rate */}
+        {/* Card 3: Month 12 Scaled Projection */}
         <div className="bg-[#101726] border border-slate-800 rounded-xl p-5 space-y-3">
           <div className="flex items-center justify-between text-xs text-slate-400">
             <span className="flex items-center gap-1.5 font-semibold text-slate-300">
               <TrendingUp className="w-3.5 h-3.5 text-cyan-400" />
-              Annualized Run Rate
+              Month 12 Exit Run-Rate
             </span>
-            <span className="text-[11px] font-mono text-slate-500">12 Months</span>
+            <span className="text-[10px] font-mono text-cyan-400 bg-cyan-950/40 px-2 py-0.5 rounded border border-cyan-800/40">
+              At {monthlyGrowthRate}% growth
+            </span>
           </div>
 
           <div>
             <div className="text-2xl font-bold font-mono text-white">
-              £{(calculationMode === 'arpdau' ? arpdauAnnualDevExGbp : funnelAnnualDevExGbp).toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+              £{monthlyProjections[11].projectedDevExGbp.toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
             </div>
             <div className="text-xs text-slate-400 mt-0.5 font-mono">
-              ~{((calculationMode === 'arpdau' ? arpdauMonthlyNetRobux : funnelMonthlyNetRobux) * 12).toLocaleString()} Net R$ / Year
+              ~{monthlyProjections[11].projectedNetRobux.toLocaleString()} Net R$ / month
             </div>
           </div>
 
           <div className="pt-2 border-t border-slate-800/80 text-[11px] text-slate-400">
-            Assumes consistent retention. Live-ops weekend updates typically cause 2x-3x spikes!
+            Cumulative 12-month earnings reach <strong className="text-emerald-400 font-mono">£{cumulativeDevExGbp.toLocaleString('en-GB', { maximumFractionDigits: 0 })}</strong>.
           </div>
         </div>
       </div>
 
-      {/* ARPDAU Mathematical Breakdown Box */}
-      <div className="bg-[#0e1420] border border-slate-800 rounded-xl p-5">
-        <h2 className="text-xs font-bold text-white mb-2 flex items-center gap-1.5">
-          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-          The DAU & ARPDAU Monetization Formula Explained
-        </h2>
-        <div className="text-xs text-slate-400 space-y-2">
-          <p className="leading-relaxed">
-            <strong>ARPDAU</strong> (Average Revenue Per Daily Active User) is the gold-standard metric top game studios use to measure monetization health regardless of player count:
-          </p>
-          <div className="p-3 bg-[#080c13] border border-slate-800 rounded font-mono text-emerald-300 text-xs overflow-x-auto">
-            Monthly DevEx (£) = DAU × ARPDAU (in R$) × 30 days × 0.70 (Creator Cut) × $0.0035 (DevEx) × £0.78 (Exchange Rate)
-          </div>
-          <p className="text-[11px] text-slate-400 leading-relaxed">
-            For example: At <strong>25,000 DAU</strong> with an ARPDAU of <strong>0.65 R$</strong>, your game generates <strong>487,500 Gross Robux</strong>/month. After Roblox's 30% platform fee, you net <strong>341,250 Robux</strong>, which cashes out via DevEx into <strong>$1,194.38 USD (~£931.61 GBP)</strong> every month.
-          </p>
+      {/* Official Roblox Portals & Analytics Quick Link Bar */}
+      <div className="bg-[#0e1420] border border-slate-800 rounded-xl p-5 space-y-3">
+        <h3 className="text-xs font-bold text-white flex items-center gap-1.5">
+          <ExternalLink className="w-3.5 h-3.5 text-emerald-400" />
+          Official Roblox Analytics & DevEx Portals
+        </h3>
+        <p className="text-[11px] text-slate-400 leading-relaxed">
+          Monitor your live game analytics (CCU, retention, ARPPU) and submit DevEx cashouts on official Roblox portals:
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+          <a
+            href="https://create.roblox.com/dashboard/creations"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="p-3 bg-[#080c13] hover:bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-lg text-xs text-slate-200 transition-colors flex items-center justify-between group"
+          >
+            <div>
+              <div className="font-semibold text-white group-hover:text-emerald-400 transition-colors">Roblox Creator Analytics</div>
+              <div className="text-[10px] text-slate-500">Track D1/D7 retention &amp; real ARPPU</div>
+            </div>
+            <ExternalLink className="w-3.5 h-3.5 text-slate-500 group-hover:text-emerald-400" />
+          </a>
+
+          <a
+            href="https://create.roblox.com/dashboard/devex"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="p-3 bg-[#080c13] hover:bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-lg text-xs text-slate-200 transition-colors flex items-center justify-between group"
+          >
+            <div>
+              <div className="font-semibold text-white group-hover:text-emerald-400 transition-colors">Official DevEx Portal</div>
+              <div className="text-[10px] text-slate-500">Submit 30,000+ R$ cashout requests</div>
+            </div>
+            <ExternalLink className="w-3.5 h-3.5 text-slate-500 group-hover:text-emerald-400" />
+          </a>
+
+          <a
+            href="https://suppliers.tipalti.com/roblox"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="p-3 bg-[#080c13] hover:bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-lg text-xs text-slate-200 transition-colors flex items-center justify-between group"
+          >
+            <div>
+              <div className="font-semibold text-white group-hover:text-emerald-400 transition-colors">Tipalti Payout Portal</div>
+              <div className="text-[10px] text-slate-500">Manage UK bank details &amp; W-8BEN</div>
+            </div>
+            <ExternalLink className="w-3.5 h-3.5 text-slate-500 group-hover:text-emerald-400" />
+          </a>
         </div>
       </div>
     </div>

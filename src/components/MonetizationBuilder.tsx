@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { GENRE_PRESETS } from '../data/genrePresets';
 import { GamePassItem, DevProductItem, GenreBlueprint } from '../types';
 import { Plus, Trash2, Download, Copy, Check, Sparkles, Layers, ShieldAlert, Coins, RefreshCw } from 'lucide-react';
+import { GamePassTicketIcon, DevProductPotionIcon, RobuxGoldIcon, RobuxIcon, SterlingCoinIcon } from './Icons';
+import { sounds } from '../utils/audio';
 
 export const MonetizationBuilder: React.FC = () => {
   const [selectedGenreId, setSelectedGenreId] = useState<string>('simulator');
@@ -15,6 +17,7 @@ export const MonetizationBuilder: React.FC = () => {
   const USD_TO_GBP = 0.78;
 
   const handleSelectGenre = (genreId: string) => {
+    sounds.playClick();
     setSelectedGenreId(genreId);
     const found = GENRE_PRESETS.find((g) => g.id === genreId);
     if (found) {
@@ -24,6 +27,7 @@ export const MonetizationBuilder: React.FC = () => {
   };
 
   const handleUpdatePassPrice = (passId: string, newPrice: number) => {
+    sounds.playCoin();
     const updatedPasses = currentBlueprint.gamePasses.map((p) =>
       p.id === passId ? { ...p, robuxPrice: Math.max(1, newPrice) } : p
     );
@@ -31,6 +35,7 @@ export const MonetizationBuilder: React.FC = () => {
   };
 
   const handleUpdateProductPrice = (prodId: string, newPrice: number) => {
+    sounds.playCoin();
     const updatedProducts = currentBlueprint.devProducts.map((p) =>
       p.id === prodId ? { ...p, robuxPrice: Math.max(1, newPrice) } : p
     );
@@ -225,33 +230,45 @@ export const MonetizationBuilder: React.FC = () => {
         <div className="flex items-center justify-between border-b border-slate-800 pb-3">
           <div className="flex items-center gap-1">
             <button
-              onClick={() => setActiveTab('passes')}
+              onClick={() => {
+                sounds.playClick();
+                setActiveTab('passes');
+              }}
               className={`px-3.5 py-1.5 text-xs font-medium rounded-md transition-colors cursor-pointer flex items-center gap-1.5 ${
                 activeTab === 'passes'
                   ? 'bg-slate-800 text-emerald-400 border border-slate-700'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
+              <GamePassTicketIcon className="w-3.5 h-3.5" />
               <span>Game Passes ({currentBlueprint.gamePasses.length})</span>
             </button>
             <button
-              onClick={() => setActiveTab('products')}
+              onClick={() => {
+                sounds.playClick();
+                setActiveTab('products');
+              }}
               className={`px-3.5 py-1.5 text-xs font-medium rounded-md transition-colors cursor-pointer flex items-center gap-1.5 ${
                 activeTab === 'products'
                   ? 'bg-slate-800 text-emerald-400 border border-slate-700'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
+              <DevProductPotionIcon className="w-3.5 h-3.5" />
               <span>Developer Products ({currentBlueprint.devProducts.length})</span>
             </button>
             <button
-              onClick={() => setActiveTab('subscription')}
+              onClick={() => {
+                sounds.playClick();
+                setActiveTab('subscription');
+              }}
               className={`px-3.5 py-1.5 text-xs font-medium rounded-md transition-colors cursor-pointer flex items-center gap-1.5 ${
                 activeTab === 'subscription'
                   ? 'bg-slate-800 text-emerald-400 border border-slate-700'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
+              <Sparkles className="w-3.5 h-3.5" />
               <span>Monthly Subscription</span>
             </button>
           </div>

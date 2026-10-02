@@ -1,5 +1,7 @@
-import React from 'react';
-import { DollarSign, Gamepad2, Calculator, Code2, BookOpen, ShieldCheck, ArrowRightLeft, Sparkles, Rocket, FolderDown } from 'lucide-react';
+import React, { useState } from 'react';
+import { DollarSign, Gamepad2, Calculator, Code2, BookOpen, ShieldCheck, Sparkles, Rocket, FolderDown, Volume2, VolumeX } from 'lucide-react';
+import { RobuxIcon, SterlingCoinIcon } from './Icons';
+import { sounds } from '../utils/audio';
 
 interface NavbarProps {
   activeTab: string;
@@ -7,6 +9,21 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(sounds.enabled);
+
+  const toggleSound = () => {
+    sounds.enabled = !sounds.enabled;
+    setSoundEnabled(sounds.enabled);
+    if (sounds.enabled) {
+      sounds.playCoin();
+    }
+  };
+
+  const handleTabClick = (tabId: string) => {
+    sounds.playClick();
+    setActiveTab(tabId);
+  };
+
   const navItems = [
     { id: 'hitgames', label: 'Hit Games (Fisch, Steal...)', icon: Sparkles },
     { id: 'launch', label: '7-Day Launch Guide', icon: Rocket },
@@ -20,24 +37,24 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
   ];
 
   return (
-    <header className="sticky top-0 z-50 bg-[#0b0f17]/95 backdrop-blur-md border-b border-slate-800">
+    <header className="sticky top-0 z-50 bg-[#070b12]/95 backdrop-blur-md border-b border-slate-800/80 shadow-lg shadow-black/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        {/* Zone 1: Single text element wordmark */}
+        {/* Zone 1: Single text element wordmark with custom Robux emblem */}
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-            <ArrowRightLeft className="w-4 h-4" />
-          </div>
           <button 
-            onClick={() => setActiveTab('hitgames')}
-            className="text-left group cursor-pointer"
+            onClick={() => handleTabClick('hitgames')}
+            className="flex items-center gap-2.5 text-left group cursor-pointer"
           >
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 group-hover:scale-105 group-hover:border-emerald-400/50 transition-all shadow-sm shadow-emerald-500/10">
+              <RobuxIcon className="w-4 h-4" />
+            </div>
             <span className="text-base font-bold tracking-tight text-white group-hover:text-emerald-400 transition-colors font-display">
-              BloxMonetize <span className="text-emerald-400">Studio</span>
+              BloxMonetize <span className="text-emerald-400 font-semibold">Studio</span>
             </span>
           </button>
         </div>
 
-        {/* Zone 2: 4-6 clean text navigation links */}
+        {/* Zone 2: Clean text navigation links */}
         <nav className="hidden xl:flex items-center gap-1 overflow-x-auto py-2">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -45,10 +62,10 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
             return (
               <button
                 key={item.id}
-                onClick={() => setActiveTab(item.id)}
+                onClick={() => handleTabClick(item.id)}
                 className={`px-2.5 py-1.5 text-xs font-medium rounded-md whitespace-nowrap transition-colors flex items-center gap-1.5 cursor-pointer ${
                   isActive
-                    ? 'bg-slate-800 text-emerald-400 border border-slate-700'
+                    ? 'bg-slate-800/90 text-emerald-400 border border-emerald-500/30 shadow-sm'
                     : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
                 }`}
               >
@@ -59,55 +76,64 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
           })}
         </nav>
 
-        {/* Medium screens secondary nav dropdown / compact strip */}
+        {/* Medium screens secondary nav compact strip */}
         <div className="hidden md:flex xl:hidden items-center gap-1 text-xs">
           <button
-            onClick={() => setActiveTab('hitgames')}
-            className={`px-2.5 py-1 rounded ${activeTab === 'hitgames' ? 'bg-slate-800 text-emerald-400' : 'text-slate-400'}`}
+            onClick={() => handleTabClick('hitgames')}
+            className={`px-2.5 py-1 rounded cursor-pointer ${activeTab === 'hitgames' ? 'bg-slate-800 text-emerald-400' : 'text-slate-400'}`}
           >
             Hit Games
           </button>
           <button
-            onClick={() => setActiveTab('launch')}
-            className={`px-2.5 py-1 rounded ${activeTab === 'launch' ? 'bg-slate-800 text-emerald-400' : 'text-slate-400'}`}
+            onClick={() => handleTabClick('launch')}
+            className={`px-2.5 py-1 rounded cursor-pointer ${activeTab === 'launch' ? 'bg-slate-800 text-emerald-400' : 'text-slate-400'}`}
           >
             Launch
           </button>
           <button
-            onClick={() => setActiveTab('toolkit')}
-            className={`px-2.5 py-1 rounded ${activeTab === 'toolkit' ? 'bg-slate-800 text-emerald-400' : 'text-slate-400'}`}
+            onClick={() => handleTabClick('toolkit')}
+            className={`px-2.5 py-1 rounded cursor-pointer ${activeTab === 'toolkit' ? 'bg-slate-800 text-emerald-400' : 'text-slate-400'}`}
           >
-            Free Assets
+            Assets
           </button>
           <button
-            onClick={() => setActiveTab('devex')}
-            className={`px-2.5 py-1 rounded ${activeTab === 'devex' ? 'bg-slate-800 text-emerald-400' : 'text-slate-400'}`}
+            onClick={() => handleTabClick('devex')}
+            className={`px-2.5 py-1 rounded cursor-pointer ${activeTab === 'devex' ? 'bg-slate-800 text-emerald-400' : 'text-slate-400'}`}
           >
             £ DevEx
           </button>
         </div>
 
-        {/* Zone 3: 1-2 primary actions */}
-        <div className="flex items-center gap-2.5">
+        {/* Zone 3: Primary actions & sound toggle */}
+        <div className="flex items-center gap-2">
+          {/* Audio toggle button */}
           <button
-            onClick={() => setActiveTab('devex')}
-            className="px-3.5 py-1.5 text-xs font-semibold text-slate-950 bg-emerald-400 rounded-lg hover:bg-emerald-300 transition-colors whitespace-nowrap flex items-center gap-1.5 shadow-sm cursor-pointer"
+            onClick={toggleSound}
+            className="p-2 rounded-lg text-slate-400 hover:text-slate-200 bg-slate-900/80 hover:bg-slate-800 border border-slate-800 transition-colors cursor-pointer"
+            title={soundEnabled ? 'Mute Studio tactile sounds' : 'Enable Studio tactile sounds'}
           >
-            <span className="font-mono font-bold">£</span>
+            {soundEnabled ? <Volume2 className="w-3.5 h-3.5 text-emerald-400" /> : <VolumeX className="w-3.5 h-3.5 text-slate-500" />}
+          </button>
+
+          <button
+            onClick={() => handleTabClick('devex')}
+            className="px-3.5 py-1.5 text-xs font-semibold text-slate-950 bg-emerald-400 hover:bg-emerald-300 rounded-lg transition-all whitespace-nowrap flex items-center gap-1.5 shadow-sm shadow-emerald-500/20 hover:shadow-emerald-500/30 cursor-pointer"
+          >
+            <SterlingCoinIcon className="w-3.5 h-3.5" />
             <span>DevEx Calculator</span>
           </button>
         </div>
       </div>
 
       {/* Mobile / Compact sub-bar */}
-      <div className="xl:hidden flex items-center gap-1 px-4 py-2 border-t border-slate-800/80 overflow-x-auto bg-[#080c13]">
+      <div className="xl:hidden flex items-center gap-1 px-4 py-2 border-t border-slate-800/80 overflow-x-auto bg-[#070b12]">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
           return (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => handleTabClick(item.id)}
               className={`px-2.5 py-1 text-xs font-medium rounded whitespace-nowrap transition-colors flex items-center gap-1 cursor-pointer ${
                 isActive
                   ? 'bg-slate-800 text-emerald-400'

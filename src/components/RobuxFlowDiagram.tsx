@@ -1,5 +1,6 @@
 import React from 'react';
-import { ArrowRight, CheckCircle2, Shield, Landmark, Sparkles, Coins } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Shield, Landmark, Sparkles } from 'lucide-react';
+import { RobuxGoldIcon, RobuxIcon, DevExVaultIcon, SterlingCoinIcon } from './Icons';
 
 export const RobuxFlowDiagram: React.FC = () => {
   const steps = [
@@ -8,7 +9,7 @@ export const RobuxFlowDiagram: React.FC = () => {
       title: 'Player Spends Robux',
       detail: 'Player buys GamePass, DevProduct, or spends time as a Roblox Premium player.',
       metric: '100% Gross Robux',
-      icon: Coins,
+      customIcon: RobuxGoldIcon,
       accent: 'text-amber-400 border-amber-500/20 bg-amber-500/10'
     },
     {
@@ -32,7 +33,7 @@ export const RobuxFlowDiagram: React.FC = () => {
       title: 'DevEx Request (30k+ R$)',
       detail: 'Once you reach 30,000 Earned Robux, you submit a DevEx cashout via Creator Hub.',
       metric: 'Rate: $0.0035 / R$',
-      icon: Sparkles,
+      customIcon: RobuxIcon,
       accent: 'text-emerald-400 border-emerald-500/20 bg-emerald-500/10'
     },
     {
@@ -40,7 +41,7 @@ export const RobuxFlowDiagram: React.FC = () => {
       title: 'Tipalti & W-8BEN (0% US Tax)',
       detail: 'Tipalti processes the payout. UK residents file W-8BEN (Treaty Art 12) for 0% US withholding.',
       metric: '100% Payout Retained',
-      icon: Landmark,
+      customIcon: DevExVaultIcon,
       accent: 'text-teal-400 border-teal-500/20 bg-teal-500/10'
     },
     {
@@ -48,16 +49,19 @@ export const RobuxFlowDiagram: React.FC = () => {
       title: 'UK Bank Deposit in £',
       detail: 'Direct wire or transfer arrives in your UK bank account in British Pounds Sterling (£ GBP).',
       metric: 'Real £ in Bank',
-      icon: Landmark,
+      customIcon: SterlingCoinIcon,
       accent: 'text-emerald-300 border-emerald-400/30 bg-emerald-400/20'
     }
   ];
 
   return (
-    <div className="bg-[#101726] border border-slate-800 rounded-xl p-6">
+    <div className="bg-[#101726] border border-slate-800 rounded-xl p-6 shadow-sm">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-5 border-b border-slate-800/80 mb-6">
         <div>
-          <h2 className="text-lg font-bold text-white font-display">The Complete Robux-to-£ Financial Pipeline</h2>
+          <h2 className="text-lg font-bold text-white font-display flex items-center gap-2">
+            <RobuxIcon className="w-5 h-5" />
+            <span>The Complete Robux-to-£ Financial Pipeline</span>
+          </h2>
           <p className="text-xs text-slate-400 mt-0.5">
             How player transactions convert from virtual Roblox tokens into real British Pounds in your UK bank account
           </p>
@@ -72,19 +76,20 @@ export const RobuxFlowDiagram: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-3 relative">
         {steps.map((step, idx) => {
-          const Icon = step.icon;
+          const CustomIcon = step.customIcon;
+          const FallbackIcon = step.icon;
           return (
             <div
               key={step.num}
-              className="bg-[#0b0f17] border border-slate-800/80 rounded-lg p-3.5 flex flex-col justify-between hover:border-slate-700 transition-colors relative"
+              className="bg-[#0b0f17] border border-slate-800/80 rounded-lg p-3.5 flex flex-col justify-between hover:border-slate-700 transition-colors relative group"
             >
               <div>
                 <div className="flex items-center justify-between mb-2.5">
                   <span className="w-5 h-5 rounded-full bg-slate-800 text-[11px] font-mono font-bold text-slate-300 flex items-center justify-center">
                     {step.num}
                   </span>
-                  <div className={`p-1.5 rounded-md border ${step.accent}`}>
-                    <Icon className="w-3.5 h-3.5" />
+                  <div className={`p-1.5 rounded-md border ${step.accent} group-hover:scale-105 transition-transform`}>
+                    {CustomIcon ? <CustomIcon className="w-3.5 h-3.5" /> : FallbackIcon && <FallbackIcon className="w-3.5 h-3.5" />}
                   </div>
                 </div>
                 <h3 className="text-xs font-bold text-white mb-1">{step.title}</h3>
