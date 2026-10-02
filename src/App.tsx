@@ -11,6 +11,9 @@ import { HitGamesGuide } from './components/HitGamesGuide';
 import { PublishingGuide } from './components/PublishingGuide';
 import { FreeToolkit } from './components/FreeToolkit';
 import { CreatorFaq } from './components/CreatorFaq';
+import { GamePortfolio } from './components/GamePortfolio';
+import { CommunityPolls } from './components/CommunityPolls';
+import { QuickLinksSidebar } from './components/QuickLinksSidebar';
 import { MilestoneModal } from './components/MilestoneNotificationSystem';
 import { evaluateMilestones } from './utils/milestones';
 import { DollarSign, Gamepad2, Calculator, Code2, BookOpen, ShieldCheck, ArrowRight, Sparkles, Rocket, FolderDown, HelpCircle, Trophy } from 'lucide-react';
@@ -46,10 +49,12 @@ export default function App() {
         milestones={appMilestones}
       />
 
-      {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {/* Top Hero Trust Strip */}
-        <section className="bg-gradient-to-r from-slate-900/90 via-[#101726] to-slate-900/90 border border-slate-800 rounded-xl p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4">
+      {/* Main Content Area + Quick Links Sidebar Container */}
+      <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col lg:flex-row gap-6 items-start">
+        {/* Main Content Viewport */}
+        <main className="flex-1 min-w-0 space-y-8 w-full">
+          {/* Top Hero Trust Strip */}
+          <section className="bg-gradient-to-r from-slate-900/90 via-[#101726] to-slate-900/90 border border-slate-800 rounded-xl p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
               <Sparkles className="w-5 h-5" />
@@ -141,6 +146,18 @@ export default function App() {
           </div>
         )}
 
+        {activeTab === 'portfolio' && (
+          <div className="space-y-8">
+            <GamePortfolio />
+          </div>
+        )}
+
+        {activeTab === 'polls' && (
+          <div className="space-y-8">
+            <CommunityPolls />
+          </div>
+        )}
+
         {activeTab === 'launch' && (
           <div className="space-y-8">
             <PublishingGuide />
@@ -196,7 +213,11 @@ export default function App() {
             <CreatorFaq />
           </div>
         )}
-      </main>
+        </main>
+
+        {/* Persistent & Responsive Quick Links Sidebar */}
+        <QuickLinksSidebar />
+      </div>
 
       {/* Footer */}
       <footer className="mt-auto border-t border-slate-800 bg-[#080c13] py-6 text-xs text-slate-500">

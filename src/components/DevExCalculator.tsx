@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { DollarSign, AlertCircle, CheckCircle2, TrendingUp, HelpCircle, ArrowUpRight, ArrowLeftRight, Sparkles, X, ExternalLink, PartyPopper, Plus, Trash2, Calendar, History, BarChart2, Globe, Coins, Settings2, RotateCcw } from 'lucide-react';
 import { RobuxIcon, SterlingCoinIcon, DevExVaultIcon, RobuxGoldIcon } from './Icons';
 import { sounds } from '../utils/audio';
+import { EstimatedIncomeTaxWidget } from './EstimatedIncomeTaxWidget';
 
 interface PayoutRecord {
   id: string;
@@ -651,6 +652,12 @@ export const DevExCalculator: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* -------------------- ESTIMATED INCOME TAX & UK BAND SHIFT WIDGET -------------------- */}
+      <EstimatedIncomeTaxWidget
+        currentCashoutGbp={devexGbp}
+        currentNetRobux={netRobux}
+      />
 
       {/* -------------------- DEVEX PAYOUT HISTORY & GROWTH TRACKER -------------------- */}
       <div className="bg-[#101726] border border-slate-800 rounded-xl p-5 sm:p-6 space-y-6">

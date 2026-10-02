@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { DollarSign, Gamepad2, Calculator, Code2, BookOpen, ShieldCheck, Sparkles, Rocket, FolderDown, Volume2, VolumeX, HelpCircle, Trophy } from 'lucide-react';
+import { DollarSign, Gamepad2, Calculator, Code2, BookOpen, ShieldCheck, Sparkles, Rocket, FolderDown, Volume2, VolumeX, HelpCircle, Trophy, FolderKanban, MessageSquare } from 'lucide-react';
 import { RobuxIcon, SterlingCoinIcon } from './Icons';
 import { sounds } from '../utils/audio';
 
@@ -28,6 +28,8 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, onOpenM
 
   const navItems = [
     { id: 'hitgames', label: 'Hit Games (Fisch, Steal...)', icon: Sparkles },
+    { id: 'portfolio', label: 'Game Portfolio', icon: FolderKanban },
+    { id: 'polls', label: 'Community Polls', icon: MessageSquare },
     { id: 'launch', label: '7-Day Launch Guide', icon: Rocket },
     { id: 'toolkit', label: 'Free Asset Links', icon: FolderDown },
     { id: 'roadmap', label: 'Monetization Guide', icon: BookOpen },

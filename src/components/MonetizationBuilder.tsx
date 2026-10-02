@@ -4,6 +4,8 @@ import { GamePassItem, DevProductItem, GenreBlueprint } from '../types';
 import { Plus, Trash2, Download, Copy, Check, Sparkles, Layers, ShieldAlert, Coins, RefreshCw, BarChart3, ArrowRightLeft, TrendingUp, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { GamePassTicketIcon, DevProductPotionIcon, RobuxGoldIcon, RobuxIcon, SterlingCoinIcon } from './Icons';
 import { sounds } from '../utils/audio';
+import { GameConceptGenerator } from './GameConceptGenerator';
+import { GameLoopPlanner } from './GameLoopPlanner';
 
 export const MonetizationBuilder: React.FC = () => {
   const [selectedGenreId, setSelectedGenreId] = useState<string>('simulator');
@@ -155,6 +157,9 @@ export const MonetizationBuilder: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Game Concept Generator & Monetization Pairing Engine */}
+      <GameConceptGenerator onLoadBlueprint={handleSelectGenre} />
+
       {/* Genre Selector Header */}
       <div className="bg-[#101726] border border-slate-800 rounded-xl p-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -227,6 +232,9 @@ export const MonetizationBuilder: React.FC = () => {
           ))}
         </div>
       </div>
+
+      {/* Interactive Visual Game Loop Planner */}
+      <GameLoopPlanner />
 
       {/* Catalog Tabs & Editor */}
       <div className="bg-[#101726] border border-slate-800 rounded-xl p-6 space-y-6">
