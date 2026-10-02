@@ -7,10 +7,13 @@ import { MonetizationBuilder } from './components/MonetizationBuilder';
 import { EconomySimulator } from './components/EconomySimulator';
 import { CodeGenerator } from './components/CodeGenerator';
 import { UkTaxGuide } from './components/UkTaxGuide';
-import { DollarSign, Gamepad2, Calculator, Code2, BookOpen, ShieldCheck, ArrowRight, Sparkles } from 'lucide-react';
+import { HitGamesGuide } from './components/HitGamesGuide';
+import { PublishingGuide } from './components/PublishingGuide';
+import { FreeToolkit } from './components/FreeToolkit';
+import { DollarSign, Gamepad2, Calculator, Code2, BookOpen, ShieldCheck, ArrowRight, Sparkles, Rocket, FolderDown } from 'lucide-react';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<string>('roadmap');
+  const [activeTab, setActiveTab] = useState<string>('hitgames');
 
   return (
     <div className="min-h-screen bg-[#0b0f17] text-slate-100 flex flex-col font-sans">
@@ -26,22 +29,22 @@ export default function App() {
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
-              <div className="text-xs text-slate-400">Developer Exchange (DevEx) & Studio Growth Suite</div>
+              <div className="text-xs text-slate-400">Zero-Cost Studio Guide & £ DevEx Engine</div>
               <h1 className="text-sm sm:text-base font-bold text-white font-display">
-                Earn Real Money from Roblox Games & Cash Out into British Pounds (£ GBP)
+                How to Build Hit Roblox Games (Fisch, Blade Ball, Steal Games) for Free & Cash Out to £
               </h1>
             </div>
           </div>
 
           <div className="flex items-center gap-3 text-xs">
             <div className="hidden sm:block text-right">
-              <span className="text-[11px] text-slate-400 block">DevEx Exchange Rate</span>
+              <span className="text-[11px] text-slate-400 block">DevEx Rate</span>
               <span className="font-mono text-emerald-400 font-bold">$0.0035 USD / 1 R$</span>
             </div>
             <div className="h-7 w-px bg-slate-800 hidden sm:block" />
             <div className="hidden sm:block text-right">
-              <span className="text-[11px] text-slate-400 block">Min Threshold</span>
-              <span className="font-mono text-slate-200 font-bold">30,000 R$ (~£82)</span>
+              <span className="text-[11px] text-slate-400 block">Development Cost</span>
+              <span className="font-mono text-emerald-300 font-bold">100% Free Tools</span>
             </div>
             <div className="h-7 w-px bg-slate-800 hidden sm:block" />
             <div className="text-right">
@@ -52,55 +55,73 @@ export default function App() {
         </section>
 
         {/* Dynamic Tab Body */}
-        {activeTab === 'roadmap' && (
+        {activeTab === 'hitgames' && (
           <div className="space-y-8">
-            <RobuxFlowDiagram />
-            <MasterGuide />
+            <HitGamesGuide />
             
-            {/* Quick Action Cards */}
+            {/* Quick action jump grid */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-slate-800">
+              <button
+                onClick={() => setActiveTab('launch')}
+                className="p-4 bg-[#101726] border border-slate-800 hover:border-emerald-500/40 rounded-xl text-left transition-all group cursor-pointer"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
+                    <Rocket className="w-4 h-4" />
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
+                </div>
+                <div className="text-xs font-bold text-white mb-1">7-Day Step-by-Step Launch</div>
+                <p className="text-[11px] text-slate-400">How to get your prototype on Roblox in 7 days without paying for ads.</p>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('toolkit')}
+                className="p-4 bg-[#101726] border border-slate-800 hover:border-emerald-500/40 rounded-xl text-left transition-all group cursor-pointer"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="p-2 rounded-lg bg-sky-500/10 text-sky-400">
+                    <FolderDown className="w-4 h-4" />
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-sky-400 group-hover:translate-x-1 transition-all" />
+                </div>
+                <div className="text-xs font-bold text-white mb-1">Free 3D & Audio Links</div>
+                <p className="text-[11px] text-slate-400">Kenney CC0 assets, Quaternius 3D models, Photopea, and Roblox free APM music.</p>
+              </button>
+
               <button
                 onClick={() => setActiveTab('devex')}
                 className="p-4 bg-[#101726] border border-slate-800 hover:border-emerald-500/40 rounded-xl text-left transition-all group cursor-pointer"
               >
                 <div className="flex items-center justify-between mb-2">
-                  <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
-                    <DollarSign className="w-4 h-4" />
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
-                </div>
-                <div className="text-xs font-bold text-white mb-1">DevEx £ Calculator</div>
-                <p className="text-[11px] text-slate-400">Calculate net British Pounds from gross Robux sales and test different cashout amounts.</p>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('architect')}
-                className="p-4 bg-[#101726] border border-slate-800 hover:border-emerald-500/40 rounded-xl text-left transition-all group cursor-pointer"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400">
-                    <Gamepad2 className="w-4 h-4" />
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all" />
-                </div>
-                <div className="text-xs font-bold text-white mb-1">Catalog Architect</div>
-                <p className="text-[11px] text-slate-400">Design high-converting game passes, consumable potions, and recurring subscriptions.</p>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('luau')}
-                className="p-4 bg-[#101726] border border-slate-800 hover:border-emerald-500/40 rounded-xl text-left transition-all group cursor-pointer"
-              >
-                <div className="flex items-center justify-between mb-2">
                   <div className="p-2 rounded-lg bg-teal-500/10 text-teal-400">
-                    <Code2 className="w-4 h-4" />
+                    <DollarSign className="w-4 h-4" />
                   </div>
                   <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-teal-400 group-hover:translate-x-1 transition-all" />
                 </div>
-                <div className="text-xs font-bold text-white mb-1">Luau Code Generator</div>
-                <p className="text-[11px] text-slate-400">Copy server-authoritative MarketplaceService scripts with bulletproof ProcessReceipt.</p>
+                <div className="text-xs font-bold text-white mb-1">DevEx £ Cashout Engine</div>
+                <p className="text-[11px] text-slate-400">Calculate Robux conversion into real British Pounds (£) directly in your bank.</p>
               </button>
             </div>
+          </div>
+        )}
+
+        {activeTab === 'launch' && (
+          <div className="space-y-8">
+            <PublishingGuide />
+          </div>
+        )}
+
+        {activeTab === 'toolkit' && (
+          <div className="space-y-8">
+            <FreeToolkit />
+          </div>
+        )}
+
+        {activeTab === 'roadmap' && (
+          <div className="space-y-8">
+            <RobuxFlowDiagram />
+            <MasterGuide />
           </div>
         )}
 
@@ -142,14 +163,14 @@ export default function App() {
           <div className="flex items-center gap-2">
             <span className="font-semibold text-slate-400">BloxMonetize Studio</span>
             <span>·</span>
-            <span>Roblox Developer Exchange (DevEx) & Monetization Suite</span>
+            <span>Zero-Cost Roblox Game Development & £ DevEx Engine</span>
           </div>
           <div className="flex items-center gap-4 text-[11px]">
+            <span>100% Free Tools</span>
+            <span>·</span>
             <span>DevEx Rate: $0.0035 / R$</span>
             <span>·</span>
-            <span>Platform Fee: 30%</span>
-            <span>·</span>
-            <span>UK Form W-8BEN Compliant</span>
+            <span>UK Form W-8BEN (0% US Tax)</span>
           </div>
         </div>
       </footer>
