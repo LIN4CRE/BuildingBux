@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { DollarSign, Gamepad2, Calculator, Code2, BookOpen, ShieldCheck, Sparkles, Rocket, FolderDown, Volume2, VolumeX } from 'lucide-react';
+import { DollarSign, Gamepad2, Calculator, Code2, BookOpen, ShieldCheck, Sparkles, Rocket, FolderDown, Volume2, VolumeX, HelpCircle } from 'lucide-react';
 import { RobuxIcon, SterlingCoinIcon } from './Icons';
 import { sounds } from '../utils/audio';
 
@@ -34,6 +34,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
     { id: 'simulator', label: 'Economy Simulator', icon: Calculator },
     { id: 'luau', label: 'Luau Scripts', icon: Code2 },
     { id: 'uktax', label: 'UK Tax & Bank', icon: ShieldCheck },
+    { id: 'faq', label: 'Creator FAQ', icon: HelpCircle },
   ];
 
   return (

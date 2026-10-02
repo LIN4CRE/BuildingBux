@@ -10,7 +10,8 @@ import { UkTaxGuide } from './components/UkTaxGuide';
 import { HitGamesGuide } from './components/HitGamesGuide';
 import { PublishingGuide } from './components/PublishingGuide';
 import { FreeToolkit } from './components/FreeToolkit';
-import { DollarSign, Gamepad2, Calculator, Code2, BookOpen, ShieldCheck, ArrowRight, Sparkles, Rocket, FolderDown } from 'lucide-react';
+import { CreatorFaq } from './components/CreatorFaq';
+import { DollarSign, Gamepad2, Calculator, Code2, BookOpen, ShieldCheck, ArrowRight, Sparkles, Rocket, FolderDown, HelpCircle } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>('hitgames');
@@ -153,6 +154,12 @@ export default function App() {
         {activeTab === 'uktax' && (
           <div className="space-y-8">
             <UkTaxGuide />
+          </div>
+        )}
+
+        {activeTab === 'faq' && (
+          <div className="space-y-8">
+            <CreatorFaq />
           </div>
         )}
       </main>

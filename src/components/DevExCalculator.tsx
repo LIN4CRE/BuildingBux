@@ -1,7 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { DollarSign, AlertCircle, CheckCircle2, TrendingUp, HelpCircle, ArrowUpRight, ArrowLeftRight, Sparkles, X, ExternalLink, PartyPopper } from 'lucide-react';
+import { DollarSign, AlertCircle, CheckCircle2, TrendingUp, HelpCircle, ArrowUpRight, ArrowLeftRight, Sparkles, X, ExternalLink, PartyPopper, Plus, Trash2, Calendar, History, BarChart2 } from 'lucide-react';
 import { RobuxIcon, SterlingCoinIcon, DevExVaultIcon, RobuxGoldIcon } from './Icons';
 import { sounds } from '../utils/audio';
+
+interface PayoutRecord {
+  id: string;
+  date: string;
+  robux: number;
+  note: string;
+}
+
+const DEFAULT_PAYOUT_HISTORY: PayoutRecord[] = [
+  { id: 'p1', date: '2024-04-12', robux: 35000, note: 'First 30k DevEx Milestone' },
+  { id: 'p2', date: '2024-07-28', robux: 85000, note: 'Summer Launch Update' },
+  { id: 'p3', date: '2024-11-15', robux: 280000, note: 'Halloween Boss Event' },
+  { id: 'p4', date: '2025-01-22', robux: 650000, note: 'Holiday Winter Surge' },
+];
 
 export const DevExCalculator: React.FC = () => {
   // Gross Robux in-game sales
@@ -11,6 +25,29 @@ export const DevExCalculator: React.FC = () => {
 
   // Target Reverse Calculator
   const [targetGbp, setTargetGbp] = useState<number>(1000); // e.g. "I want to earn £1,000/mo"
+
+  // Payout History Tracker State
+  const [payoutHistory, setPayoutHistory] = useState<PayoutRecord[]>(() => {
+    try {
+      const saved = localStorage.getItem('blox_devex_payout_history');
+      return saved ? JSON.parse(saved) : DEFAULT_PAYOUT_HISTORY;
+    } catch {
+      return DEFAULT_PAYOUT_HISTORY;
+    }
+  });
+
+  const [newPayoutDate, setNewPayoutDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [newPayoutRobux, setNewPayoutRobux] = useState<number>(50000);
+  const [newPayoutNote, setNewPayoutNote] = useState<string>('Game Update Spike');
+  const [showAddPayoutForm, setShowAddPayoutForm] = useState<boolean>(false);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('blox_devex_payout_history', JSON.stringify(payoutHistory));
+    } catch (e) {
+      console.warn(e);
+    }
+  }, [payoutHistory]);
 
   // Calculate Net Earned Robux
   const netRobux = isGrossInput ? Math.round(grossRobux * 0.7) : grossRobux;
@@ -51,12 +88,6 @@ export const DevExCalculator: React.FC = () => {
     { label: '5,000,000 R$', netVal: 5000000 },
   ];
 
-  // UK Tax estimation
-  const tradingAllowance = 1000;
-  const taxableGbp = Math.max(0, devexGbp - tradingAllowance);
-  const estimatedBasicTax = taxableGbp * 0.20;
-  const netGbpAfterTax = devexGbp - estimatedBasicTax;
-
   const handlePresetClick = (netTarget: number) => {
     sounds.playCoin();
     if (isGrossInput) {
@@ -69,6 +100,37 @@ export const DevExCalculator: React.FC = () => {
   // Next Tier Progress calculation
   const nextMilestone = netRobux < 30000 ? 30000 : netRobux < 100000 ? 100000 : netRobux < 1000000 ? 1000000 : 5000000;
   const progressToNext = Math.min(100, Math.round((netRobux / nextMilestone) * 100));
+
+  // Payout History Calculations
+  const totalHistoryRobux = payoutHistory.reduce((sum, p) => sum + p.robux, 0);
+  const totalHistoryUsd = totalHistoryRobux * DEVEX_RATE_USD;
+  const totalHistoryGbp = totalHistoryUsd * usdToGbpRate;
+  const avgHistoryGbp = payoutHistory.length > 0 ? totalHistoryGbp / payoutHistory.length : 0;
+  const maxHistoryRobux = Math.max(...payoutHistory.map(p => p.robux), 30000);
+
+  const handleAddPayoutSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPayoutRobux < 30000) {
+      alert('DevEx minimum threshold is 30,000 Earned Robux.');
+      return;
+    }
+    sounds.playSuccess();
+    const newRecord: PayoutRecord = {
+      id: `payout-${Date.now()}`,
+      date: newPayoutDate,
+      robux: newPayoutRobux,
+      note: newPayoutNote || 'DevEx Payout'
+    };
+    const updated = [...payoutHistory, newRecord].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    setPayoutHistory(updated);
+    setShowAddPayoutForm(false);
+    setNewPayoutNote('');
+  };
+
+  const handleDeletePayout = (id: string) => {
+    sounds.playClick();
+    setPayoutHistory(prev => prev.filter(p => p.id !== id));
+  };
 
   return (
     <div className="space-y-6">
@@ -373,6 +435,218 @@ export const DevExCalculator: React.FC = () => {
             </div>
             <span className="text-[10px] text-slate-500">Estimated ~{Math.round(requiredGrossRobux / (0.65 * 30 * 10))} Concurrent (CCU)</span>
           </div>
+        </div>
+      </div>
+
+      {/* -------------------- DEVEX PAYOUT HISTORY & GROWTH TRACKER -------------------- */}
+      <div className="bg-[#101726] border border-slate-800 rounded-xl p-5 sm:p-6 space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+          <div>
+            <div className="flex items-center gap-2 text-xs font-mono text-emerald-400 mb-1">
+              <History className="w-3.5 h-3.5" />
+              <span>Personal Financial Ledger</span>
+            </div>
+            <h2 className="text-lg font-bold text-white font-display">
+              DevEx Payout History &amp; Growth Tracker
+            </h2>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Log your historical Roblox cashouts to visualize your real-money earnings growth over time.
+            </p>
+          </div>
+
+          <button
+            onClick={() => {
+              sounds.playClick();
+              setShowAddPayoutForm(!showAddPayoutForm);
+            }}
+            className="px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm self-start sm:self-auto"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>{showAddPayoutForm ? 'Cancel' : 'Log Past Payout'}</span>
+          </button>
+        </div>
+
+        {/* Add Payout Record Form */}
+        {showAddPayoutForm && (
+          <form onSubmit={handleAddPayoutSubmit} className="bg-[#0b0f17] border border-emerald-500/40 p-4 rounded-xl space-y-4 animate-in fade-in duration-200">
+            <div className="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Record New DevEx Payout</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <div>
+                <label className="text-slate-400 block mb-1">Payout Date</label>
+                <input
+                  type="date"
+                  value={newPayoutDate}
+                  onChange={(e) => setNewPayoutDate(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-1.5 text-white font-mono focus:outline-none focus:border-emerald-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <div className="flex justify-between mb-1">
+                  <label className="text-slate-400">Earned Robux Amount</label>
+                  <span className="font-mono text-emerald-400 font-semibold">{newPayoutRobux.toLocaleString()} R$</span>
+                </div>
+                <input
+                  type="number"
+                  min="30000"
+                  step="5000"
+                  value={newPayoutRobux}
+                  onChange={(e) => setNewPayoutRobux(Math.max(0, parseInt(e.target.value) || 0))}
+                  className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-1.5 text-white font-mono focus:outline-none focus:border-emerald-500"
+                  required
+                />
+                <div className="flex gap-1 mt-1 text-[10px] text-slate-500 font-mono">
+                  <button type="button" onClick={() => setNewPayoutRobux(30000)} className="hover:text-emerald-400 cursor-pointer">30k</button>
+                  <span>·</span>
+                  <button type="button" onClick={() => setNewPayoutRobux(100000)} className="hover:text-emerald-400 cursor-pointer">100k</button>
+                  <span>·</span>
+                  <button type="button" onClick={() => setNewPayoutRobux(500000)} className="hover:text-emerald-400 cursor-pointer">500k</button>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-slate-400 block mb-1">Milestone Note</label>
+                <input
+                  type="text"
+                  value={newPayoutNote}
+                  onChange={(e) => setNewPayoutNote(e.target.value)}
+                  placeholder="e.g. Summer Game Update Spike"
+                  className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-1.5 text-white focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center pt-2 border-t border-slate-800 text-xs">
+              <span className="font-mono text-emerald-400">
+                Calculated Value: ${(newPayoutRobux * DEVEX_RATE_USD).toFixed(2)} USD = £{(newPayoutRobux * DEVEX_RATE_USD * usdToGbpRate).toFixed(2)} GBP
+              </span>
+              <button
+                type="submit"
+                className="px-4 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-lg transition-colors cursor-pointer"
+              >
+                Save Payout Record
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* Lifetime Payout Summary Badges */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+          <div className="bg-[#0b0f17] border border-slate-800 rounded-lg p-3">
+            <span className="text-slate-400 text-[11px] block mb-1">Total Robux Cashed Out</span>
+            <div className="text-lg font-bold font-mono text-emerald-400">
+              {totalHistoryRobux.toLocaleString()} <span className="text-xs">R$</span>
+            </div>
+            <span className="text-[10px] text-slate-500 font-mono">{payoutHistory.length} payouts total</span>
+          </div>
+
+          <div className="bg-[#0b0f17] border border-slate-800 rounded-lg p-3">
+            <span className="text-slate-400 text-[11px] block mb-1">Total Received in USD ($)</span>
+            <div className="text-lg font-bold font-mono text-sky-400">
+              ${totalHistoryUsd.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </div>
+            <span className="text-[10px] text-teal-300 font-mono">0% US Tax Withheld</span>
+          </div>
+
+          <div className="bg-emerald-950/20 border border-emerald-500/30 rounded-lg p-3">
+            <span className="text-emerald-300 text-[11px] block mb-1">Total in UK Bank (£ GBP)</span>
+            <div className="text-lg font-black font-mono text-emerald-300">
+              £{totalHistoryGbp.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </div>
+            <span className="text-[10px] text-emerald-400 font-mono">Net BACS Deposited</span>
+          </div>
+
+          <div className="bg-[#0b0f17] border border-slate-800 rounded-lg p-3">
+            <span className="text-slate-400 text-[11px] block mb-1">Average Payout Amount</span>
+            <div className="text-lg font-bold font-mono text-white">
+              £{avgHistoryGbp.toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+            </div>
+            <span className="text-[10px] text-slate-500 font-mono">Per cashout cycle</span>
+          </div>
+        </div>
+
+        {/* Visual Historical Growth Bars */}
+        {payoutHistory.length > 0 && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs text-slate-400">
+              <span>Historical DevEx Growth Trajectory</span>
+              <span className="font-mono text-emerald-400">Max Single Cashout: {maxHistoryRobux.toLocaleString()} R$</span>
+            </div>
+
+            <div className="bg-[#070b12] border border-slate-800/80 rounded-xl p-4 pt-6">
+              <div className="h-44 flex items-end justify-between gap-2 sm:gap-4">
+                {payoutHistory.map((rec) => {
+                  const heightPercent = Math.max(12, Math.round((rec.robux / maxHistoryRobux) * 100));
+                  const gbp = rec.robux * DEVEX_RATE_USD * usdToGbpRate;
+                  return (
+                    <div key={rec.id} className="flex-1 flex flex-col items-center h-full justify-end group relative cursor-pointer">
+                      {/* Tooltip */}
+                      <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-slate-900 border border-emerald-500/60 p-1.5 rounded text-center shadow-lg pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                        <div className="text-[9px] font-mono text-slate-400">{rec.date} · {rec.note}</div>
+                        <div className="text-xs font-bold font-mono text-emerald-300">£{gbp.toFixed(0)} ({rec.robux.toLocaleString()} R$)</div>
+                      </div>
+
+                      {/* Bar */}
+                      <div
+                        className="w-full bg-gradient-to-t from-emerald-600/80 to-teal-400 rounded-t-md group-hover:from-emerald-500 group-hover:to-teal-300 transition-all shadow-sm"
+                        style={{ height: `${heightPercent}%` }}
+                      />
+
+                      {/* Date */}
+                      <div className="text-[10px] font-mono text-slate-500 group-hover:text-emerald-400 mt-2 truncate w-full text-center">
+                        {rec.date.slice(5)}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Ledger Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr className="border-b border-slate-800 text-slate-400 font-mono text-[11px]">
+                <th className="pb-2">Date</th>
+                <th className="pb-2">Milestone / Update Note</th>
+                <th className="pb-2">Earned Robux</th>
+                <th className="pb-2">DevEx (USD)</th>
+                <th className="pb-2">Bank Payout (£)</th>
+                <th className="pb-2 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800/60">
+              {payoutHistory.map((rec) => {
+                const usd = rec.robux * DEVEX_RATE_USD;
+                const gbp = usd * usdToGbpRate;
+                return (
+                  <tr key={rec.id} className="hover:bg-slate-900/40 transition-colors">
+                    <td className="py-2.5 font-mono text-slate-300">{rec.date}</td>
+                    <td className="py-2.5 text-white font-medium">{rec.note}</td>
+                    <td className="py-2.5 font-mono text-emerald-400">{rec.robux.toLocaleString()} R$</td>
+                    <td className="py-2.5 font-mono text-sky-400">${usd.toFixed(2)}</td>
+                    <td className="py-2.5 font-mono text-emerald-300 font-bold">£{gbp.toFixed(2)}</td>
+                    <td className="py-2.5 text-right">
+                      <button
+                        onClick={() => handleDeletePayout(rec.id)}
+                        className="p-1 text-slate-500 hover:text-rose-400 transition-colors cursor-pointer"
+                        title="Delete entry"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </div>
 

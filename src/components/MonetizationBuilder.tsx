@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { GENRE_PRESETS } from '../data/genrePresets';
 import { GamePassItem, DevProductItem, GenreBlueprint } from '../types';
-import { Plus, Trash2, Download, Copy, Check, Sparkles, Layers, ShieldAlert, Coins, RefreshCw } from 'lucide-react';
+import { Plus, Trash2, Download, Copy, Check, Sparkles, Layers, ShieldAlert, Coins, RefreshCw, BarChart3, ArrowRightLeft, TrendingUp, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { GamePassTicketIcon, DevProductPotionIcon, RobuxGoldIcon, RobuxIcon, SterlingCoinIcon } from './Icons';
 import { sounds } from '../utils/audio';
 
@@ -10,8 +10,12 @@ export const MonetizationBuilder: React.FC = () => {
   const [currentBlueprint, setCurrentBlueprint] = useState<GenreBlueprint>(GENRE_PRESETS[0]);
   const [copied, setCopied] = useState<boolean>(false);
 
-  // New item modal/states
-  const [activeTab, setActiveTab] = useState<'passes' | 'products' | 'subscription'>('passes');
+  // Catalog Tabs: passes | products | subscription | comparison
+  const [activeTab, setActiveTab] = useState<'passes' | 'products' | 'subscription' | 'comparison'>('passes');
+
+  // Comparison State
+  const [comparisonSpenders, setComparisonSpenders] = useState<number>(2500);
+  const [selectedComparisonModel, setSelectedComparisonModel] = useState<'all' | 'passes' | 'products' | 'hybrid'>('all');
 
   const DEVEX_RATE = 0.0035;
   const USD_TO_GBP = 0.78;
@@ -271,6 +275,20 @@ export const MonetizationBuilder: React.FC = () => {
               <Sparkles className="w-3.5 h-3.5" />
               <span>Monthly Subscription</span>
             </button>
+            <button
+              onClick={() => {
+                sounds.playClick();
+                setActiveTab('comparison');
+              }}
+              className={`px-3.5 py-1.5 text-xs font-medium rounded-md transition-colors cursor-pointer flex items-center gap-1.5 ${
+                activeTab === 'comparison'
+                  ? 'bg-slate-800 text-emerald-400 border border-slate-700'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <ArrowRightLeft className="w-3.5 h-3.5" />
+              <span>Strategy Comparison</span>
+            </button>
           </div>
 
           <div>
@@ -460,6 +478,236 @@ export const MonetizationBuilder: React.FC = () => {
 
             <div className="bg-emerald-950/20 border border-emerald-500/30 rounded-lg p-3 text-xs text-emerald-200">
               <strong>Retention Strategy:</strong> {currentBlueprint.subscription.retentionBenefit}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 4: MONETIZATION STRATEGY COMPARISON (Game Passes vs Developer Products vs Hybrid) */}
+        {activeTab === 'comparison' && (
+          <div className="space-y-6">
+            <div className="bg-[#0b0f17] border border-slate-800 rounded-lg p-5 space-y-4">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+                <div>
+                  <div className="flex items-center gap-2 text-xs font-mono text-emerald-400 mb-1">
+                    <ArrowRightLeft className="w-3.5 h-3.5" />
+                    <span>Monetization Model Comparison Engine</span>
+                  </div>
+                  <h3 className="text-base font-bold text-white font-display">
+                    Game Passes vs. Developer Products: Earnings &amp; LTV Analysis
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Compare how one-time permanent Game Passes stack up against repeatable consumable Developer Products over a 6-month lifecycle.
+                  </p>
+                </div>
+
+                {/* Spender Population Input */}
+                <div className="bg-slate-900 border border-slate-800 p-2.5 rounded-lg text-xs space-y-1 self-start md:self-auto min-w-[220px]">
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-400">Paying Spenders Pool:</span>
+                    <span className="font-mono text-emerald-400 font-bold">{comparisonSpenders.toLocaleString()} users</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="250"
+                    max="20000"
+                    step="250"
+                    value={comparisonSpenders}
+                    onChange={(e) => setComparisonSpenders(parseInt(e.target.value))}
+                    className="w-full accent-emerald-400 bg-slate-800 h-1.5 rounded-lg appearance-none cursor-pointer"
+                  />
+                  <div className="flex justify-between text-[10px] text-slate-500 font-mono">
+                    <span>250 Indie</span>
+                    <span>5k Medium</span>
+                    <span>20k Mega-Hit</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Strategy Selector Pills */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+                {[
+                  { id: 'all', label: 'All 3 Models (Side-by-Side)' },
+                  { id: 'passes', label: 'Game Passes Only (One-Time)' },
+                  { id: 'products', label: 'Developer Products Only (Repeatable)' },
+                  { id: 'hybrid', label: 'Hybrid Studio Model (Recommended)' },
+                ].map((m) => (
+                  <button
+                    key={m.id}
+                    onClick={() => {
+                      sounds.playClick();
+                      setSelectedComparisonModel(m.id as typeof selectedComparisonModel);
+                    }}
+                    className={`px-3 py-1.5 rounded-lg font-medium transition-colors whitespace-nowrap cursor-pointer ${
+                      selectedComparisonModel === m.id
+                        ? 'bg-slate-800 text-emerald-400 border border-slate-700'
+                        : 'text-slate-400 hover:text-slate-200 bg-slate-950 border border-slate-800/80'
+                    }`}
+                  >
+                    {m.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Comparison Cards Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                {/* MODEL 1: GAME PASSES ONLY */}
+                {(selectedComparisonModel === 'all' || selectedComparisonModel === 'passes') && (
+                  <div className={`bg-[#070b12] border rounded-xl p-4 flex flex-col justify-between space-y-4 ${
+                    selectedComparisonModel === 'passes' ? 'border-amber-500/60 ring-1 ring-amber-500/30 md:col-span-3' : 'border-slate-800'
+                  }`}>
+                    <div>
+                      <div className="flex items-center justify-between pb-2 border-b border-slate-800/80">
+                        <div className="flex items-center gap-2">
+                          <GamePassTicketIcon className="w-4 h-4 text-amber-400" />
+                          <span className="text-xs font-bold text-white">Game Passes Only</span>
+                        </div>
+                        <span className="text-[10px] font-mono text-amber-400 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-800/40">
+                          One-Time LTV
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">
+                        Permanent upgrades (2x Speed, VIP, Auto-Collect). High upfront launch spike, but suffers from player saturation as early buyers never purchase again.
+                      </p>
+
+                      <div className="space-y-2 mt-4 text-xs font-mono">
+                        <div className="bg-slate-900/60 p-2.5 rounded border border-slate-800/80">
+                          <span className="text-slate-400 text-[10px] block">Month 1 Launch Spike</span>
+                          <span className="text-sm font-bold text-white">
+                            {(Math.round(comparisonSpenders * 1.4 * 350 * 0.7)).toLocaleString()} Net R$
+                          </span>
+                          <span className="text-emerald-400 text-xs block">
+                            ~£{(Math.round(comparisonSpenders * 1.4 * 350 * 0.7) * DEVEX_RATE * USD_TO_GBP).toFixed(0)} DevEx
+                          </span>
+                        </div>
+
+                        <div className="bg-slate-900/60 p-2.5 rounded border border-slate-800/80">
+                          <span className="text-slate-400 text-[10px] block">Month 6 (After Saturation)</span>
+                          <span className="text-sm font-bold text-rose-400">
+                            {(Math.round(comparisonSpenders * 0.25 * 350 * 0.7)).toLocaleString()} Net R$ (-82%)
+                          </span>
+                          <span className="text-slate-400 text-xs block">
+                            ~£{(Math.round(comparisonSpenders * 0.25 * 350 * 0.7) * DEVEX_RATE * USD_TO_GBP).toFixed(0)} DevEx
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-3 border-t border-slate-800/80 text-[11px] text-slate-400 space-y-1">
+                      <div>• <strong>Whale Ceiling:</strong> Hard-capped (player cannot spend &gt; bundle cost).</div>
+                      <div>• <strong>Best For:</strong> Story Obbies, Casual Tycoons, One-and-Done games.</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* MODEL 2: DEVELOPER PRODUCTS ONLY */}
+                {(selectedComparisonModel === 'all' || selectedComparisonModel === 'products') && (
+                  <div className={`bg-[#070b12] border rounded-xl p-4 flex flex-col justify-between space-y-4 ${
+                    selectedComparisonModel === 'products' ? 'border-sky-500/60 ring-1 ring-sky-500/30 md:col-span-3' : 'border-slate-800'
+                  }`}>
+                    <div>
+                      <div className="flex items-center justify-between pb-2 border-b border-slate-800/80">
+                        <div className="flex items-center gap-2">
+                          <DevProductPotionIcon className="w-4 h-4 text-sky-400" />
+                          <span className="text-xs font-bold text-white">Dev Products Only</span>
+                        </div>
+                        <span className="text-[10px] font-mono text-sky-400 bg-sky-950/60 px-2 py-0.5 rounded border border-sky-800/40">
+                          Repeatable
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">
+                        Consumables, luck potions, egg opens, ability spins, and instant currency. Lower initial basket size but unlocks uncapped whale monetization.
+                      </p>
+
+                      <div className="space-y-2 mt-4 text-xs font-mono">
+                        <div className="bg-slate-900/60 p-2.5 rounded border border-slate-800/80">
+                          <span className="text-slate-400 text-[10px] block">Month 1 Baseline</span>
+                          <span className="text-sm font-bold text-white">
+                            {(Math.round(comparisonSpenders * 2.6 * 150 * 0.7)).toLocaleString()} Net R$
+                          </span>
+                          <span className="text-emerald-400 text-xs block">
+                            ~£{(Math.round(comparisonSpenders * 2.6 * 150 * 0.7) * DEVEX_RATE * USD_TO_GBP).toFixed(0)} DevEx
+                          </span>
+                        </div>
+
+                        <div className="bg-slate-900/60 p-2.5 rounded border border-slate-800/80">
+                          <span className="text-slate-400 text-[10px] block">Month 6 (Recurring Habits)</span>
+                          <span className="text-sm font-bold text-sky-400">
+                            {(Math.round(comparisonSpenders * 2.2 * 150 * 0.7)).toLocaleString()} Net R$ (High Retention)
+                          </span>
+                          <span className="text-emerald-400 text-xs block">
+                            ~£{(Math.round(comparisonSpenders * 2.2 * 150 * 0.7) * DEVEX_RATE * USD_TO_GBP).toFixed(0)} DevEx
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-3 border-t border-slate-800/80 text-[11px] text-slate-400 space-y-1">
+                      <div>• <strong>Whale Ceiling:</strong> 100% Uncapped (Whales can spend 50,000+ R$).</div>
+                      <div>• <strong>Best For:</strong> Simulators, Gacha RNG, PvP Combat, Battle Royale.</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* MODEL 3: HYBRID STUDIO MODEL */}
+                {(selectedComparisonModel === 'all' || selectedComparisonModel === 'hybrid') && (
+                  <div className={`bg-gradient-to-b from-emerald-950/30 to-[#070b12] border rounded-xl p-4 flex flex-col justify-between space-y-4 ${
+                    selectedComparisonModel === 'hybrid' ? 'border-emerald-500/80 ring-2 ring-emerald-500/40 md:col-span-3' : 'border-emerald-500/40'
+                  }`}>
+                    <div>
+                      <div className="flex items-center justify-between pb-2 border-b border-emerald-500/30">
+                        <div className="flex items-center gap-2">
+                          <Sparkles className="w-4 h-4 text-emerald-400" />
+                          <span className="text-xs font-bold text-emerald-300">Hybrid Studio Model</span>
+                        </div>
+                        <span className="text-[10px] font-mono text-emerald-300 bg-emerald-900/60 px-2 py-0.5 rounded border border-emerald-700/50">
+                          Golden Standard
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-300 mt-2 leading-relaxed">
+                        60% Core Game Passes for immediate cash flow + 40% Developer Products (Luck Potions &amp; Spins) for recurring monthly retention.
+                      </p>
+
+                      <div className="space-y-2 mt-4 text-xs font-mono">
+                        <div className="bg-slate-900/60 p-2.5 rounded border border-emerald-500/30">
+                          <span className="text-slate-400 text-[10px] block">Month 1 Combined Cashout</span>
+                          <span className="text-sm font-bold text-emerald-300">
+                            {(Math.round(comparisonSpenders * (1.2 * 350 + 2.0 * 150) * 0.7)).toLocaleString()} Net R$
+                          </span>
+                          <span className="text-emerald-400 text-xs block font-bold">
+                            ~£{(Math.round(comparisonSpenders * (1.2 * 350 + 2.0 * 150) * 0.7) * DEVEX_RATE * USD_TO_GBP).toFixed(0)} DevEx
+                          </span>
+                        </div>
+
+                        <div className="bg-slate-900/60 p-2.5 rounded border border-emerald-500/30">
+                          <span className="text-slate-400 text-[10px] block">Month 6 Sustainable Run-Rate</span>
+                          <span className="text-sm font-bold text-teal-300">
+                            {(Math.round(comparisonSpenders * (0.3 * 350 + 2.1 * 150) * 0.7)).toLocaleString()} Net R$
+                          </span>
+                          <span className="text-teal-400 text-xs block font-semibold">
+                            ~£{(Math.round(comparisonSpenders * (0.3 * 350 + 2.1 * 150) * 0.7) * DEVEX_RATE * USD_TO_GBP).toFixed(0)} / month
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-3 border-t border-emerald-500/20 text-[11px] text-emerald-200/80 space-y-1">
+                      <div>• <strong>Whale Ceiling:</strong> Infinite via repeatable boosts and spins.</div>
+                      <div>• <strong>Verdict:</strong> Generates 2.4x higher 12-month revenue than passes alone!</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Strategic Architecture Takeaway */}
+              <div className="p-4 bg-slate-900/60 border border-slate-800 rounded-lg text-xs space-y-2">
+                <div className="flex items-center gap-2 font-bold text-white">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  <span>The Proven Roblox Top-100 Monetization Formula</span>
+                </div>
+                <p className="text-slate-300 text-[11px] leading-relaxed">
+                  Games like <em>Fisch</em> and <em>Blade Ball</em> achieve high ARPDAU by pricing <strong>Game Passes between 199 R$ and 799 R$</strong> (converting new spenders instantly) while providing <strong>Developer Products priced between 49 R$ and 299 R$</strong> (Luck potions, spins, crate keys) that retained hardcore players purchase every single weekend event.
+                </p>
+              </div>
             </div>
           </div>
         )}
