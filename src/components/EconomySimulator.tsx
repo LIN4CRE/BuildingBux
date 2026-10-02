@@ -5,6 +5,7 @@ import { sounds } from '../utils/audio';
 import { calculateUkTaxBands, evaluateMilestones, Milestone } from '../utils/milestones';
 import { MONETIZATION_HEATMAP, HEATMAP_COLUMNS, HeatmapRow, HeatmapCell } from '../data/monetizationHeatmapData';
 import { MilestoneModal } from './MilestoneNotificationSystem';
+import { DailyMonetizationTipCarousel } from './DailyMonetizationTipCarousel';
 
 export const EconomySimulator: React.FC = () => {
   // Mode switcher: 'arpdau' (DAU & ARPDAU Model) vs 'funnel' (CCU & Spender Funnel Model)
@@ -77,6 +78,14 @@ export const EconomySimulator: React.FC = () => {
   const funnelMonthlyNetRobux = funnelDailyTotalNetRobux * 30;
   const funnelMonthlyDevExUsd = funnelMonthlyNetRobux * DEVEX_RATE;
   const funnelMonthlyDevExGbp = funnelMonthlyDevExUsd * usdToGbpRate;
+
+  // Current Effective ARPDAU for Context-Aware Insights
+  const currentEffectiveArpdau =
+    calculationMode === 'arpdau'
+      ? arpdauRobux
+      : funnelDau > 0
+      ? (dailyGrossGameRobux + dailyPremiumRobux) / funnelDau
+      : 0.65;
 
   // Active Base Monthly Net Robux
   const activeBaseMonthlyNetRobux = calculationMode === 'arpdau' ? arpdauMonthlyNetRobux : funnelMonthlyNetRobux;
@@ -438,6 +447,13 @@ export const EconomySimulator: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Daily Context-Aware Monetization Strategy & ARPDAU Accelerator Carousel */}
+      <DailyMonetizationTipCarousel
+        arpdauRobux={currentEffectiveArpdau}
+        conversionRate={conversionRate}
+        premiumShare={premiumShare}
+      />
 
       {/* Primary Financial Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
