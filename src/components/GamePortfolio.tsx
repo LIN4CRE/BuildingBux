@@ -17,7 +17,7 @@ export interface PortfolioGame {
   status: 'Live & Growing' | 'Mature' | 'In Development';
 }
 
-const DEFAULT_PORTFOLIO: PortfolioGame[] = [
+export const SAMPLE_PORTFOLIO_BENCHMARKS: PortfolioGame[] = [
   {
     id: 'game-1',
     title: 'Ocean Depths: Deep Sea Fishing',
@@ -58,6 +58,8 @@ const DEFAULT_PORTFOLIO: PortfolioGame[] = [
     status: 'Mature'
   }
 ];
+
+const DEFAULT_PORTFOLIO: PortfolioGame[] = [];
 
 export const GamePortfolio: React.FC = () => {
   const [games, setGames] = useState<PortfolioGame[]>(() => {
@@ -242,8 +244,41 @@ export const GamePortfolio: React.FC = () => {
         </div>
       </div>
 
-      {/* Games Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      {/* Games Grid or Empty State */}
+      {games.length === 0 ? (
+        <div className="bg-[#101726] border border-dashed border-slate-800 rounded-xl p-8 sm:p-12 text-center space-y-4">
+          <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mx-auto">
+            <Gamepad2 className="w-6 h-6" />
+          </div>
+          <div className="max-w-md mx-auto space-y-1">
+            <h3 className="text-base font-bold text-white font-display">
+              Your Studio Portfolio is Clean
+            </h3>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              No experiences recorded yet. Add your published Roblox game to track CCU, lifetime Robux volume, and monetization architectures, or load reference benchmark data.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <button
+              onClick={handleOpenAdd}
+              className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Add Your First Game</span>
+            </button>
+            <button
+              onClick={() => {
+                sounds.playSuccess();
+                setGames(SAMPLE_PORTFOLIO_BENCHMARKS);
+              }}
+              className="px-4 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-semibold text-xs rounded-lg transition-colors cursor-pointer"
+            >
+              Load Example Studio Portfolio
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {games.map((game) => {
           const gameGbp = game.lifetimeRobux * DEVEX_RATE * USD_TO_GBP;
 
@@ -357,7 +392,8 @@ export const GamePortfolio: React.FC = () => {
             </div>
           );
         })}
-      </div>
+        </div>
+      )}
 
       {/* Add / Edit Experience Modal */}
       {showAddModal && (

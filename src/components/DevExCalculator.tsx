@@ -3,22 +3,30 @@ import { DollarSign, AlertCircle, CheckCircle2, TrendingUp, HelpCircle, ArrowUpR
 import { RobuxIcon, SterlingCoinIcon, DevExVaultIcon, RobuxGoldIcon } from './Icons';
 import { sounds } from '../utils/audio';
 import { EstimatedIncomeTaxWidget } from './EstimatedIncomeTaxWidget';
+import { PayoutTrendChart } from './PayoutTrendChart';
 
-interface PayoutRecord {
+export interface PayoutRecord {
   id: string;
   date: string;
   robux: number;
   note: string;
 }
 
-const DEFAULT_PAYOUT_HISTORY: PayoutRecord[] = [
-  { id: 'p1', date: '2024-04-12', robux: 35000, note: 'First 30k DevEx Milestone' },
-  { id: 'p2', date: '2024-07-28', robux: 85000, note: 'Summer Launch Update' },
-  { id: 'p3', date: '2024-11-15', robux: 280000, note: 'Halloween Boss Event' },
-  { id: 'p4', date: '2025-01-22', robux: 650000, note: 'Holiday Winter Surge' },
+export const BENCHMARK_PAYOUT_TEMPLATE: PayoutRecord[] = [
+  { id: 'p1', date: '2026-05-12', robux: 35000, note: 'First 30k DevEx Milestone' },
+  { id: 'p2', date: '2026-06-25', robux: 85000, note: 'Summer Launch Update' },
+  { id: 'p3', date: '2026-07-20', robux: 190000, note: 'Trade Hub & Aura Rolling Spike' },
+  { id: 'p4', date: '2026-08-30', robux: 340000, note: 'Weekend 2x Luck Event LTO' },
+  { id: 'p5', date: '2026-09-28', robux: 520000, note: 'Autumn Raid Boss Expansion' },
 ];
 
-export const DevExCalculator: React.FC = () => {
+const DEFAULT_PAYOUT_HISTORY: PayoutRecord[] = [];
+
+interface DevExCalculatorProps {
+  onBalanceChange?: (netRobux: number) => void;
+}
+
+export const DevExCalculator: React.FC<DevExCalculatorProps> = ({ onBalanceChange }) => {
   // Gross Robux in-game sales
   const [grossRobux, setGrossRobux] = useState<number>(100000);
   const [usdToGbpRate, setUsdToGbpRate] = useState<number>(0.78); // £0.78 per $1 USD (~ £1 = $1.28 USD)
@@ -68,6 +76,17 @@ export const DevExCalculator: React.FC = () => {
   const devexUsd = netRobux * DEVEX_RATE_USD;
   const devexGbp = devexUsd * usdToGbpRate;
   const qualifies = netRobux >= MIN_DEVEX_THRESHOLD;
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('blox_projected_devex_robux', netRobux.toString());
+    } catch (e) {
+      console.warn(e);
+    }
+    if (onBalanceChange) {
+      onBalanceChange(netRobux);
+    }
+  }, [netRobux, onBalanceChange]);
 
   // Threshold Toast Notification State
   const [showThresholdToast, setShowThresholdToast] = useState<boolean>(qualifies);
@@ -194,9 +213,32 @@ export const DevExCalculator: React.FC = () => {
               <DevExVaultIcon className="w-4 h-4" />
               <span>Official Roblox Developer Exchange Formula</span>
             </div>
-            <h1 className="text-xl font-bold text-white font-display">
-              Roblox DevEx to British Pounds (£) Calculator
-            </h1>
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h1 className="text-xl font-bold text-white font-display">
+                Roblox DevEx to British Pounds (£) Calculator
+              </h1>
+              {/* Subtle 30,000 Robux Threshold Status Badge */}
+              <div
+                className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-semibold transition-all border ${
+                  qualifies
+                    ? 'bg-emerald-950/80 border-emerald-500/50 text-emerald-300 shadow-sm shadow-emerald-500/20'
+                    : 'bg-slate-900 border-slate-700/80 text-slate-400'
+                }`}
+              >
+                <span
+                  className={`w-2 h-2 rounded-full ${
+                    qualifies
+                      ? 'bg-emerald-400 animate-pulse'
+                      : 'bg-slate-500'
+                  }`}
+                />
+                <span>
+                  {qualifies
+                    ? `30k Met (${netRobux.toLocaleString()} R$ · £${devexGbp.toFixed(2)})`
+                    : `Below 30k Threshold (${netRobux.toLocaleString()} / 30,000 R$)`}
+                </span>
+              </div>
+            </div>
             <p className="text-xs text-slate-400 mt-1 max-w-2xl">
               Calculate exact cashouts from Roblox Developer Exchange directly into GBP (£) based on the official fixed exchange rate ($0.0035 USD per Robux).
             </p>
@@ -791,84 +833,91 @@ export const DevExCalculator: React.FC = () => {
           </div>
         </div>
 
-        {/* Visual Historical Growth Bars */}
-        {payoutHistory.length > 0 && (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs text-slate-400">
-              <span>Historical DevEx Growth Trajectory</span>
-              <span className="font-mono text-emerald-400">Max Single Cashout: {maxHistoryRobux.toLocaleString()} R$</span>
+        {/* Payout Trend Visualization (Growth in Real-World Currency) */}
+        <PayoutTrendChart
+          payoutHistory={payoutHistory}
+          usdToGbpRate={usdToGbpRate}
+          devexRateUsd={DEVEX_RATE_USD}
+        />
+
+        {/* Ledger Table or Clean Empty State */}
+        {payoutHistory.length === 0 ? (
+          <div className="bg-[#0b0f17] border border-dashed border-slate-800 rounded-xl p-8 text-center space-y-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mx-auto">
+              <History className="w-5 h-5" />
             </div>
-
-            <div className="bg-[#070b12] border border-slate-800/80 rounded-xl p-4 pt-6">
-              <div className="h-44 flex items-end justify-between gap-2 sm:gap-4">
-                {payoutHistory.map((rec) => {
-                  const heightPercent = Math.max(12, Math.round((rec.robux / maxHistoryRobux) * 100));
-                  const gbp = rec.robux * DEVEX_RATE_USD * usdToGbpRate;
-                  return (
-                    <div key={rec.id} className="flex-1 flex flex-col items-center h-full justify-end group relative cursor-pointer">
-                      {/* Tooltip */}
-                      <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-slate-900 border border-emerald-500/60 p-1.5 rounded text-center shadow-lg pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-20">
-                        <div className="text-[9px] font-mono text-slate-400">{rec.date} · {rec.note}</div>
-                        <div className="text-xs font-bold font-mono text-emerald-300">£{gbp.toFixed(0)} ({rec.robux.toLocaleString()} R$)</div>
-                      </div>
-
-                      {/* Bar */}
-                      <div
-                        className="w-full bg-gradient-to-t from-emerald-600/80 to-teal-400 rounded-t-md group-hover:from-emerald-500 group-hover:to-teal-300 transition-all shadow-sm"
-                        style={{ height: `${heightPercent}%` }}
-                      />
-
-                      {/* Date */}
-                      <div className="text-[10px] font-mono text-slate-500 group-hover:text-emerald-400 mt-2 truncate w-full text-center">
-                        {rec.date.slice(5)}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+            <div className="max-w-md mx-auto space-y-1">
+              <h4 className="text-sm font-bold text-white font-display">
+                No Past Payouts Recorded
+              </h4>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Log your real DevEx cashouts to track your actual GBP bank earnings, or load the reference benchmark trajectory to explore the trend visualization.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  sounds.playClick();
+                  setShowAddPayoutForm(true);
+                }}
+                className="px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Log Past Payout</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  sounds.playSuccess();
+                  setPayoutHistory(BENCHMARK_PAYOUT_TEMPLATE);
+                }}
+                className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-semibold text-xs rounded-lg transition-colors cursor-pointer"
+              >
+                Load Benchmark Trajectory
+              </button>
             </div>
           </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="border-b border-slate-800 text-slate-400 font-mono text-[11px]">
+                  <th className="pb-2">Date</th>
+                  <th className="pb-2">Milestone / Update Note</th>
+                  <th className="pb-2">Earned Robux</th>
+                  <th className="pb-2">DevEx (USD)</th>
+                  <th className="pb-2">Bank Payout (£)</th>
+                  <th className="pb-2 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800/60">
+                {payoutHistory.map((rec) => {
+                  const usd = rec.robux * DEVEX_RATE_USD;
+                  const gbp = usd * usdToGbpRate;
+                  return (
+                    <tr key={rec.id} className="hover:bg-slate-900/40 transition-colors">
+                      <td className="py-2.5 font-mono text-slate-300">{rec.date}</td>
+                      <td className="py-2.5 text-white font-medium">{rec.note}</td>
+                      <td className="py-2.5 font-mono text-emerald-400">{rec.robux.toLocaleString()} R$</td>
+                      <td className="py-2.5 font-mono text-sky-400">${usd.toFixed(2)}</td>
+                      <td className="py-2.5 font-mono text-emerald-300 font-bold">£{gbp.toFixed(2)}</td>
+                      <td className="py-2.5 text-right">
+                        <button
+                          onClick={() => handleDeletePayout(rec.id)}
+                          className="p-1 text-slate-500 hover:text-rose-400 transition-colors cursor-pointer"
+                          title="Delete entry"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
-
-        {/* Ledger Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr className="border-b border-slate-800 text-slate-400 font-mono text-[11px]">
-                <th className="pb-2">Date</th>
-                <th className="pb-2">Milestone / Update Note</th>
-                <th className="pb-2">Earned Robux</th>
-                <th className="pb-2">DevEx (USD)</th>
-                <th className="pb-2">Bank Payout (£)</th>
-                <th className="pb-2 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/60">
-              {payoutHistory.map((rec) => {
-                const usd = rec.robux * DEVEX_RATE_USD;
-                const gbp = usd * usdToGbpRate;
-                return (
-                  <tr key={rec.id} className="hover:bg-slate-900/40 transition-colors">
-                    <td className="py-2.5 font-mono text-slate-300">{rec.date}</td>
-                    <td className="py-2.5 text-white font-medium">{rec.note}</td>
-                    <td className="py-2.5 font-mono text-emerald-400">{rec.robux.toLocaleString()} R$</td>
-                    <td className="py-2.5 font-mono text-sky-400">${usd.toFixed(2)}</td>
-                    <td className="py-2.5 font-mono text-emerald-300 font-bold">£{gbp.toFixed(2)}</td>
-                    <td className="py-2.5 text-right">
-                      <button
-                        onClick={() => handleDeletePayout(rec.id)}
-                        className="p-1 text-slate-500 hover:text-rose-400 transition-colors cursor-pointer"
-                        title="Delete entry"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
       </div>
 
       {/* Official Roblox Portals & Analytics Quick Link Bar */}

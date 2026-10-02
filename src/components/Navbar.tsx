@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { DollarSign, Gamepad2, Calculator, Code2, BookOpen, ShieldCheck, Sparkles, Rocket, FolderDown, Volume2, VolumeX, HelpCircle, Trophy, FolderKanban, MessageSquare } from 'lucide-react';
+import { DollarSign, Gamepad2, Calculator, Code2, BookOpen, ShieldCheck, Sparkles, Rocket, FolderDown, Volume2, VolumeX, HelpCircle, Trophy, FolderKanban, MessageSquare, Bell } from 'lucide-react';
 import { RobuxIcon, SterlingCoinIcon } from './Icons';
 import { sounds } from '../utils/audio';
 
@@ -8,10 +8,14 @@ interface NavbarProps {
   setActiveTab: (tab: string) => void;
   onOpenMilestones?: () => void;
   unlockedMilestonesCount?: number;
+  onOpenGrowthAlerts?: () => void;
+  projectedRobux?: number;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, onOpenMilestones, unlockedMilestonesCount = 3 }) => {
+export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, onOpenMilestones, unlockedMilestonesCount = 3, onOpenGrowthAlerts, projectedRobux = 70000 }) => {
   const [soundEnabled, setSoundEnabled] = useState<boolean>(sounds.enabled);
+
+  const isThresholdMet = projectedRobux >= 30000;
 
   const toggleSound = () => {
     sounds.enabled = !sounds.enabled;
@@ -125,6 +129,50 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, onOpenM
               <span className="hidden sm:inline font-mono">{unlockedMilestonesCount}/7</span>
             </button>
           )}
+
+          {/* Growth Alerts Configuration Button */}
+          {onOpenGrowthAlerts && (
+            <button
+              onClick={() => {
+                sounds.playClick();
+                onOpenGrowthAlerts();
+              }}
+              className="px-2.5 py-1.5 rounded-lg text-emerald-300 hover:text-emerald-200 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 transition-colors cursor-pointer flex items-center gap-1.5 text-xs font-semibold"
+              title="Configure Real-Time Growth & KPI Alerts"
+            >
+              <Bell className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="hidden sm:inline font-mono">Alerts</span>
+            </button>
+          )}
+
+          {/* Subtle 30k DevEx Threshold Badge */}
+          <button
+            onClick={() => handleTabClick('devex')}
+            className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-mono transition-all cursor-pointer ${
+              isThresholdMet
+                ? 'bg-emerald-950/70 border-emerald-500/50 text-emerald-300 shadow-sm shadow-emerald-500/20 hover:bg-emerald-900/60'
+                : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-slate-300 hover:border-slate-700'
+            }`}
+            title={
+              isThresholdMet
+                ? `30,000 Robux minimum threshold met (${projectedRobux.toLocaleString()} R$). Ready for DevEx cashout!`
+                : `Current projected balance (${projectedRobux.toLocaleString()} R$) is below the 30,000 Robux DevEx threshold.`
+            }
+          >
+            <span className="relative flex h-2 w-2">
+              {isThresholdMet && (
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              )}
+              <span
+                className={`relative inline-flex rounded-full h-2 w-2 ${
+                  isThresholdMet ? 'bg-emerald-400' : 'bg-slate-500'
+                }`}
+              />
+            </span>
+            <span className="font-semibold">
+              {isThresholdMet ? 'DevEx Ready' : '30k Threshold'}
+            </span>
+          </button>
 
           {/* Audio toggle button */}
           <button

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FREE_CREATOR_RESOURCES } from '../data/freeResourcesData';
 import { ExternalLink, Layers, Sparkles, Bookmark, BookmarkCheck, Search, Trash2, Star, Check } from 'lucide-react';
 import { sounds } from '../utils/audio';
+import { AssetBudgetingTool } from './AssetBudgetingTool';
 
 const DEFAULT_BOOKMARKS = [
   'Kenney.nl (CC0 Game Assets)',
@@ -168,6 +169,9 @@ export const FreeToolkit: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Roblox Mobile & Low-End Device Asset Budget Profiler */}
+      <AssetBudgetingTool />
 
       {/* Resource Categories */}
       <div className="space-y-6">

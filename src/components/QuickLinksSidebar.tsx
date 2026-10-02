@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ExternalLink, Compass, ShieldCheck, DollarSign, BarChart2, BookOpen, Users, ChevronRight, ChevronLeft, Link2, X } from 'lucide-react';
+import { ExternalLink, Compass, ShieldCheck, DollarSign, BarChart2, BookOpen, Users, ChevronRight, ChevronLeft, Link2, X, Bell } from 'lucide-react';
 import { RobuxIcon, SterlingCoinIcon } from './Icons';
 import { sounds } from '../utils/audio';
 
@@ -77,7 +77,7 @@ export const OFFICIAL_ROBLOX_LINKS: QuickLinkItem[] = [
   }
 ];
 
-export const QuickLinksSidebar: React.FC = () => {
+export const QuickLinksSidebar: React.FC<{ onOpenGrowthAlerts?: () => void }> = ({ onOpenGrowthAlerts }) => {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState<boolean>(false);
 
@@ -245,6 +245,24 @@ export const QuickLinksSidebar: React.FC = () => {
                   );
                 })}
               </div>
+
+              {/* Growth & KPI Alerts Settings Trigger */}
+              {onOpenGrowthAlerts && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    sounds.playClick();
+                    onOpenGrowthAlerts();
+                  }}
+                  className="w-full p-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 rounded-lg text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center gap-2">
+                    <Bell className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Growth &amp; KPI Alerts</span>
+                  </div>
+                  <ChevronRight className="w-3.5 h-3.5 text-emerald-400" />
+                </button>
+              )}
 
               {/* DevEx Constants Summary Box */}
               <div className="pt-3 border-t border-slate-800/80 bg-[#080c13] p-2.5 rounded-lg text-[10px] font-mono space-y-1 text-slate-400">

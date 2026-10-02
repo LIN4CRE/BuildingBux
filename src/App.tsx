@@ -15,6 +15,7 @@ import { GamePortfolio } from './components/GamePortfolio';
 import { CommunityPolls } from './components/CommunityPolls';
 import { QuickLinksSidebar } from './components/QuickLinksSidebar';
 import { MilestoneModal } from './components/MilestoneNotificationSystem';
+import { GrowthAlertsPanel } from './components/GrowthAlertsPanel';
 import { evaluateMilestones } from './utils/milestones';
 import { DollarSign, Gamepad2, Calculator, Code2, BookOpen, ShieldCheck, ArrowRight, Sparkles, Rocket, FolderDown, HelpCircle, Trophy } from 'lucide-react';
 import { sounds } from './utils/audio';
@@ -22,6 +23,15 @@ import { sounds } from './utils/audio';
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>('hitgames');
   const [showGlobalMilestones, setShowGlobalMilestones] = useState<boolean>(false);
+  const [showGrowthAlerts, setShowGrowthAlerts] = useState<boolean>(false);
+  const [projectedDevExRobux, setProjectedDevExRobux] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem('blox_projected_devex_robux');
+      return saved ? parseInt(saved, 10) : 70000;
+    } catch {
+      return 70000;
+    }
+  });
 
   // Global default baseline milestones
   const appMilestones = evaluateMilestones({
@@ -40,6 +50,8 @@ export default function App() {
         setActiveTab={setActiveTab}
         onOpenMilestones={() => setShowGlobalMilestones(true)}
         unlockedMilestonesCount={unlockedCount}
+        onOpenGrowthAlerts={() => setShowGrowthAlerts(true)}
+        projectedRobux={projectedDevExRobux}
       />
 
       {/* Global Milestone Modal */}
@@ -47,6 +59,12 @@ export default function App() {
         isOpen={showGlobalMilestones}
         onClose={() => setShowGlobalMilestones(false)}
         milestones={appMilestones}
+      />
+
+      {/* Real-Time Growth & KPI Alerts Settings Modal */}
+      <GrowthAlertsPanel
+        isOpen={showGrowthAlerts}
+        onClose={() => setShowGrowthAlerts(false)}
       />
 
       {/* Main Content Area + Quick Links Sidebar Container */}
@@ -180,7 +198,7 @@ export default function App() {
         {activeTab === 'devex' && (
           <div className="space-y-8">
             <RobuxFlowDiagram />
-            <DevExCalculator />
+            <DevExCalculator onBalanceChange={setProjectedDevExRobux} />
           </div>
         )}
 
@@ -216,7 +234,7 @@ export default function App() {
         </main>
 
         {/* Persistent & Responsive Quick Links Sidebar */}
-        <QuickLinksSidebar />
+        <QuickLinksSidebar onOpenGrowthAlerts={() => setShowGrowthAlerts(true)} />
       </div>
 
       {/* Footer */}
