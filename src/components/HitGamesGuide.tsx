@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { HIT_GAMES_LIST, HitGameBlueprint } from '../data/hitGamesData';
-import { Sparkles, Terminal, Copy, Check, Clock, Layers, ArrowUpRight, Search, Zap, Code, ShieldCheck } from 'lucide-react';
+import { Sparkles, Terminal, Copy, Check, Clock, Layers, ArrowUpRight, Search, Zap, Code, ShieldCheck, ExternalLink, Bot, Send } from 'lucide-react';
 
 export const HitGamesGuide: React.FC = () => {
   const [selectedGameId, setSelectedGameId] = useState<string>('fisch');
@@ -21,6 +21,10 @@ export const HitGamesGuide: React.FC = () => {
     navigator.clipboard.writeText(prompt);
     setCopiedPromptId(id);
     setTimeout(() => setCopiedPromptId(null), 2500);
+  };
+
+  const getArenaUrl = (prompt: string) => {
+    return `https://arena.ai/agent?prompt=${encodeURIComponent(prompt)}`;
   };
 
   return (
@@ -121,13 +125,29 @@ export const HitGamesGuide: React.FC = () => {
             </p>
           </div>
 
-          <button
-            onClick={() => handleCopyPrompt(currentGame.aiPrompt, currentGame.id)}
-            className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-lg transition-colors flex items-center gap-2 cursor-pointer shadow-sm self-start md:self-auto shrink-0"
-          >
-            {copiedPromptId === currentGame.id ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-            <span>{copiedPromptId === currentGame.id ? 'Prompt Copied!' : 'Copy AI Code Prompt'}</span>
-          </button>
+          {/* Action buttons: Copy Prompt + Send to Arena.ai/agent */}
+          <div className="flex items-center gap-2 self-start md:self-auto shrink-0 flex-wrap">
+            <button
+              onClick={() => handleCopyPrompt(currentGame.aiPrompt, currentGame.id)}
+              className="px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm"
+            >
+              {copiedPromptId === currentGame.id ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+              <span>{copiedPromptId === currentGame.id ? 'Copied!' : 'Copy AI Prompt'}</span>
+            </button>
+
+            <a
+              href={getArenaUrl(currentGame.aiPrompt)}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => handleCopyPrompt(currentGame.aiPrompt, currentGame.id)}
+              className="px-3.5 py-2 bg-sky-500/20 hover:bg-sky-500/30 border border-sky-500/40 text-sky-300 hover:text-white font-semibold text-xs rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm group"
+              title="Opens Arena.ai/agent with prompt pre-loaded and copied to clipboard"
+            >
+              <Bot className="w-4 h-4 text-sky-400 group-hover:scale-110 transition-transform" />
+              <span>Send prompt to Arena.ai/agent</span>
+              <ExternalLink className="w-3 h-3 text-sky-400/80" />
+            </a>
+          </div>
         </div>
 
         {/* 2-Column: Core Mechanics & Free Tech Stack */}
@@ -179,25 +199,41 @@ export const HitGamesGuide: React.FC = () => {
         </div>
 
         {/* AI Prompt Box (Copy-Pasteable into AI coding agents) */}
-        <div className="bg-[#06090f] border border-slate-800 rounded-lg p-4 space-y-2">
-          <div className="flex items-center justify-between text-xs">
+        <div className="bg-[#06090f] border border-slate-800 rounded-lg p-4 space-y-2.5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
             <span className="font-mono text-emerald-400 font-semibold flex items-center gap-1.5">
               <Code className="w-3.5 h-3.5" />
-              Ready-to-Use AI Luau Script Prompt (Copy into Gemini/Claude/ChatGPT)
+              Ready-to-Use AI Luau Script Prompt (Copy into Gemini/Claude/ChatGPT or Arena.ai)
             </span>
-            <button
-              onClick={() => handleCopyPrompt(currentGame.aiPrompt, currentGame.id)}
-              className="text-slate-400 hover:text-white transition-colors text-[11px] flex items-center gap-1 cursor-pointer"
-            >
-              {copiedPromptId === currentGame.id ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-              <span>{copiedPromptId === currentGame.id ? 'Copied' : 'Copy'}</span>
-            </button>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handleCopyPrompt(currentGame.aiPrompt, currentGame.id)}
+                className="text-slate-400 hover:text-white transition-colors text-[11px] flex items-center gap-1 cursor-pointer bg-slate-900 border border-slate-700/80 px-2 py-1 rounded"
+              >
+                {copiedPromptId === currentGame.id ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                <span>{copiedPromptId === currentGame.id ? 'Copied' : 'Copy'}</span>
+              </button>
+
+              <a
+                href={getArenaUrl(currentGame.aiPrompt)}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => handleCopyPrompt(currentGame.aiPrompt, currentGame.id)}
+                className="text-sky-300 hover:text-white transition-colors text-[11px] flex items-center gap-1 cursor-pointer bg-sky-950/40 border border-sky-800/60 hover:bg-sky-900/50 px-2.5 py-1 rounded font-medium"
+              >
+                <Send className="w-3 h-3 text-sky-400" />
+                <span>Send to Arena.ai/agent</span>
+                <ExternalLink className="w-2.5 h-2.5 text-sky-400/80" />
+              </a>
+            </div>
           </div>
+
           <div className="p-3 bg-[#0b0f17] border border-slate-800/80 rounded text-xs text-slate-300 font-mono leading-relaxed select-all">
             "{currentGame.aiPrompt}"
           </div>
           <p className="text-[11px] text-slate-500">
-            Paste this exact prompt into an AI assistant to get the complete, tested Roblox Luau server and client script!
+            Click <strong>"Send prompt to Arena.ai/agent"</strong> to automatically copy this prompt to your clipboard and launch the agent workspace ready to run.
           </p>
         </div>
 
