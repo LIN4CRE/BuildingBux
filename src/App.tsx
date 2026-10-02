@@ -11,16 +11,40 @@ import { HitGamesGuide } from './components/HitGamesGuide';
 import { PublishingGuide } from './components/PublishingGuide';
 import { FreeToolkit } from './components/FreeToolkit';
 import { CreatorFaq } from './components/CreatorFaq';
-import { DollarSign, Gamepad2, Calculator, Code2, BookOpen, ShieldCheck, ArrowRight, Sparkles, Rocket, FolderDown, HelpCircle } from 'lucide-react';
+import { MilestoneModal } from './components/MilestoneNotificationSystem';
+import { evaluateMilestones } from './utils/milestones';
+import { DollarSign, Gamepad2, Calculator, Code2, BookOpen, ShieldCheck, ArrowRight, Sparkles, Rocket, FolderDown, HelpCircle, Trophy } from 'lucide-react';
 import { sounds } from './utils/audio';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>('hitgames');
+  const [showGlobalMilestones, setShowGlobalMilestones] = useState<boolean>(false);
+
+  // Global default baseline milestones
+  const appMilestones = evaluateMilestones({
+    ccu: 250,
+    dau: 25000,
+    monthlyNetRobux: 34125,
+    annualGbp: 11179
+  });
+  const unlockedCount = appMilestones.filter(m => m.unlocked).length;
 
   return (
     <div className="min-h-screen bg-[#0b0f17] text-slate-100 flex flex-col font-sans">
       {/* 3-Zone Top Navigation Contract */}
-      <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Navbar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        onOpenMilestones={() => setShowGlobalMilestones(true)}
+        unlockedMilestonesCount={unlockedCount}
+      />
+
+      {/* Global Milestone Modal */}
+      <MilestoneModal
+        isOpen={showGlobalMilestones}
+        onClose={() => setShowGlobalMilestones(false)}
+        milestones={appMilestones}
+      />
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">

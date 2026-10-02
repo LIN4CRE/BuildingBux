@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
-import { DollarSign, Gamepad2, Calculator, Code2, BookOpen, ShieldCheck, Sparkles, Rocket, FolderDown, Volume2, VolumeX, HelpCircle } from 'lucide-react';
+import { DollarSign, Gamepad2, Calculator, Code2, BookOpen, ShieldCheck, Sparkles, Rocket, FolderDown, Volume2, VolumeX, HelpCircle, Trophy } from 'lucide-react';
 import { RobuxIcon, SterlingCoinIcon } from './Icons';
 import { sounds } from '../utils/audio';
 
 interface NavbarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
+  onOpenMilestones?: () => void;
+  unlockedMilestonesCount?: number;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
+export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, onOpenMilestones, unlockedMilestonesCount = 3 }) => {
   const [soundEnabled, setSoundEnabled] = useState<boolean>(sounds.enabled);
 
   const toggleSound = () => {
@@ -107,6 +109,21 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
 
         {/* Zone 3: Primary actions & sound toggle */}
         <div className="flex items-center gap-2">
+          {/* Milestone Trophy Rack Button */}
+          {onOpenMilestones && (
+            <button
+              onClick={() => {
+                sounds.playClick();
+                onOpenMilestones();
+              }}
+              className="px-2.5 py-1.5 rounded-lg text-amber-300 hover:text-amber-200 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 transition-colors cursor-pointer flex items-center gap-1.5 text-xs font-semibold"
+              title="View Project Milestones & Achievement Rack"
+            >
+              <Trophy className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden sm:inline font-mono">{unlockedMilestonesCount}/7</span>
+            </button>
+          )}
+
           {/* Audio toggle button */}
           <button
             onClick={toggleSound}
