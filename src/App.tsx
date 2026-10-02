@@ -12,6 +12,7 @@ import { PublishingGuide } from './components/PublishingGuide';
 import { FreeToolkit } from './components/FreeToolkit';
 import { CreatorFaq } from './components/CreatorFaq';
 import { DollarSign, Gamepad2, Calculator, Code2, BookOpen, ShieldCheck, ArrowRight, Sparkles, Rocket, FolderDown, HelpCircle } from 'lucide-react';
+import { sounds } from './utils/audio';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>('hitgames');
@@ -63,7 +64,10 @@ export default function App() {
             {/* Quick action jump grid */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-slate-800">
               <button
-                onClick={() => setActiveTab('launch')}
+                onClick={() => {
+                  sounds.playClick();
+                  setActiveTab('launch');
+                }}
                 className="p-4 bg-[#101726] border border-slate-800 hover:border-emerald-500/40 rounded-xl text-left transition-all group cursor-pointer"
               >
                 <div className="flex items-center justify-between mb-2">
@@ -77,7 +81,10 @@ export default function App() {
               </button>
 
               <button
-                onClick={() => setActiveTab('toolkit')}
+                onClick={() => {
+                  sounds.playClick();
+                  setActiveTab('toolkit');
+                }}
                 className="p-4 bg-[#101726] border border-slate-800 hover:border-emerald-500/40 rounded-xl text-left transition-all group cursor-pointer"
               >
                 <div className="flex items-center justify-between mb-2">
@@ -91,7 +98,10 @@ export default function App() {
               </button>
 
               <button
-                onClick={() => setActiveTab('devex')}
+                onClick={() => {
+                  sounds.playClick();
+                  setActiveTab('devex');
+                }}
                 className="p-4 bg-[#101726] border border-slate-800 hover:border-emerald-500/40 rounded-xl text-left transition-all group cursor-pointer"
               >
                 <div className="flex items-center justify-between mb-2">
