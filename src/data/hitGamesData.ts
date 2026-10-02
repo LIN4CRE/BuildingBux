@@ -1,3 +1,11 @@
+export interface PromptSections {
+  roleAndContext: string;
+  architecture: string;
+  coreMechanic: string;
+  securityAndNetworking: string;
+  codeContract: string;
+}
+
 export interface HitGameBlueprint {
   id: string;
   title: string;
@@ -8,11 +16,29 @@ export interface HitGameBlueprint {
   coreMechanic: string;
   freeTechStack: string[];
   stepByStepBuild: string[];
-  aiPrompt: string;
+  promptSections: PromptSections;
+  aiPrompt: string; // Pre-compiled 5-section string
   monetizationAdvice: string;
 }
 
-export const HIT_GAMES_LIST: HitGameBlueprint[] = [
+export function format5SectionPrompt(sections: PromptSections, title: string): string {
+  return `### SECTION 1: ROLE & SYSTEM OBJECTIVE
+${sections.roleAndContext}
+
+### SECTION 2: SYSTEM ARCHITECTURE & ROBLOX STUDIO PLACEMENT
+${sections.architecture}
+
+### SECTION 3: CORE GAMEPLAY MECHANICS & MATHEMATICAL RULES
+${sections.coreMechanic}
+
+### SECTION 4: NETWORKING & SERVER-AUTHORITATIVE ANTI-EXPLOIT SECURITY
+${sections.securityAndNetworking}
+
+### SECTION 5: COMPLETE LUAU CODE IMPLEMENTATION CONTRACT
+${sections.codeContract}`;
+}
+
+const rawGames: Array<Omit<HitGameBlueprint, 'aiPrompt'>> = [
   {
     id: 'fisch',
     title: 'Fisch',
@@ -35,7 +61,28 @@ export const HIT_GAMES_LIST: HitGameBlueprint[] = [
       '5. Award random fish based on biome loot tables (e.g. 70% Trout, 25% Salmon, 5% Golden Marlin).',
       '6. Add an NPC Merchant on the dock with a ProximityPrompt to sell fish for Coins.'
     ],
-    aiPrompt: 'Write a complete Roblox Luau client-server fishing system. On tool activate, player casts a bobber using a Raycast into Terrain Water. After 3-6 seconds, trigger a Gui minigame where a target slider bounces between 0 and 1 using math.sin, and the player holds Left-Click to move their cursor. If the player stays within the target for 4 seconds, fire a RemoteEvent to server to award a fish with randomized weight and cash value.',
+    promptSections: {
+      roleAndContext: 'You are a Principal Roblox Luau Systems Architect. Build a complete, production-ready, client-server fishing system inspired by "Fisch" with fluid cast raycasting, high-tension reel minigame, randomized weight & mutation roll tables, and persistent data storage.',
+      architecture: `1. ReplicatedStorage.FishingEvents:
+   - RemoteEvent "CastBobber" (Client -> Server)
+   - RemoteEvent "StartReelMinigame" (Server -> Client)
+   - RemoteEvent "MinigameFinished" (Client -> Server)
+   - RemoteFunction "SellFishAtMerchant" (Client -> Server)
+2. ServerScriptService.FishingManager (Server Script)
+3. StarterPlayer.StarterPlayerScripts.FishingUIController (LocalScript)
+4. StarterGui.FishingGui (Reel Bar ScreenGui with TargetBracket and PlayerSlider frames)`,
+      coreMechanic: `1. Tool Cast: Player activates Fishing Rod. Raycast from camera to terrain checks for Enum.Material.Water. If water is detected, spawn a bobber part connected to rod tip via RopeConstraint.
+2. Bite Timer: Server task.delay(math.random(3, 7)) triggers fish bite alert.
+3. Reel Minigame: A Target bracket oscillates between 0 and 1 along the Y-axis using math.sin(os.clock() * speed). Player holds Left-Click to raise their bar; releasing lets gravity pull it down. Player must keep their bar overlapping the target for 4.0 cumulative seconds.
+4. Catch Loot Generation: Roll on weighted fish table: Common (60%), Rare (30%), Mythic (9%), Cosmic (1%). Generate random Weight (kg) = BaseWeight * math.random(80, 180)/100, and 5% chance of "Shiny" or "Abyssal" mutation multiplier.`,
+      securityAndNetworking: `1. Server verifies player position is within 25 studs of the cast origin to stop teleport casting.
+2. The server measures the exact elapsed time between StartReelMinigame and MinigameFinished. If client returns success faster than 3.5 seconds, reject and flag invalid.
+3. All fish rewards, coin leaderstat increments, and inventory updates occur strictly on the Server with pcall.`,
+      codeContract: `Provide complete, working, strict Luau code (--!strict):
+1. Complete ServerScriptService.FishingManager script.
+2. Complete StarterPlayerScripts.FishingUIController script.
+Include full type annotations, event listeners, and leaderstats (Coins, TotalCaught). Do not omit functions or use placeholder comments.`
+    },
     monetizationAdvice: 'Sell Lucky Bait potions (Developer Products) and exotic Rod passes like "Enchanted Carbon Rod" or "Sonar Fish Radar".'
   },
   {
@@ -59,7 +106,24 @@ export const HIT_GAMES_LIST: HitGameBlueprint[] = [
       '4. Trigger a loud server alarm: "[Player] stole [Victim]\'s Egg!"',
       '5. If the robber reaches their own base safely, deposit coins and add +1 Steal to leaderstats. If tagged/hit with a slap bat, drop the egg.'
     ],
-    aiPrompt: 'Write a Roblox Luau script for a base-stealing game. Each player is assigned a Base plot on join. The base has an "Egg" model with a ProximityPrompt. When another player holds the prompt, weld the egg to their HumanoidRootPart, reduce WalkSpeed to 12, and emit an alarm. If they touch their own Base zone, delete the carried egg, award 100 Cash, and respawn the victim\'s egg after 15 seconds.',
+    promptSections: {
+      roleAndContext: 'You are a Senior Roblox Studio Game Engineer. Build an authoritative multiplayer base-heist system inspired by "Steal An Egg" where players sneak into rival territory, steal physical eggs, and carry them home under movement penalties.',
+      architecture: `1. Workspace.BasePlots: Array of 6 Model plots, each containing "Pedestal" (Part with ProximityPrompt), "SpawnZone" (Part), and "EggModel".
+2. ServerScriptService.BasePlotManager (Server Script)
+3. ReplicatedStorage.HeistEvents:
+   - RemoteEvent "AlarmTriggered" (Server -> All Clients)
+   - RemoteEvent "EggBanked" (Server -> All Clients)
+4. StarterPlayer.StarterCharacterScripts.CarryingDebuff (LocalScript)`,
+      coreMechanic: `1. Base Claiming: On PlayerAdded, assign the player to the nearest available BasePlot and set ObjectValue PlotOwner = player.
+2. Stealing: When a rival player activates the Pedestal ProximityPrompt (HoldDuration = 1.5s), create a WeldConstraint attaching the EggModel to their HumanoidRootPart at Vector3.new(0, 0, -1.5).
+3. Debuff: Reduce robber WalkSpeed from 16 to 11 and prevent jumping.
+4. Banking: Connect Touched event on the robber's home BasePlot SpawnZone. If the carried egg touches their own base, destroy the carried egg, award +100 Cash & +1 Steal to leaderstats, and respawn the victim's egg after 15 seconds.
+5. Slap Tagging: If the robber takes damage or is slapped, un-weld the egg and drop it to the ground.`,
+      securityAndNetworking: `1. Validate that the player interacting with the ProximityPrompt is NOT the owner of that base.
+2. Confirm distance between player and pedestal is <= 10 studs on server before granting weld.
+3. Prevent players from depositing stolen eggs in bases they do not own.`,
+      codeContract: `Provide complete, strict Luau (--!strict) code for ServerScriptService.BasePlotManager with automatic base claiming, weld handling, alarm announcements, and leaderstats setup. No placeholders.`
+    },
     monetizationAdvice: 'Sell Laser Security Gates (GamePass), Speed Sneakers (+50% sprint while carrying), and Slap Gloves to knock thieves out.'
   },
   {
@@ -83,7 +147,24 @@ export const HIT_GAMES_LIST: HitGameBlueprint[] = [
       '4. If target activates sword block within 15 studs of the ball, deflect it, increment ball speed by 15%, and target a new alive player.',
       '5. If ball touches player without blocking, eliminate player and award tokens to the last deflector.'
     ],
-    aiPrompt: 'Write a Roblox Luau script for a Blade Ball deflection mechanic. Spawn a Part representing the homing ball. In RunService.Heartbeat, lerp or steer the ball towards a target Player character at a speed that increases on every hit. When the targeted player presses Space or Click, check if the distance from character to ball is less than 15 studs; if true, play a clash particle, pick a new random target player, and increase speed by 10%. If ball touches the player without blocking, kill player with BreakJoints.',
+    promptSections: {
+      roleAndContext: 'You are an Expert Combat Systems Developer in Roblox Luau. Engineer a high-frequency Blade Ball deflection mechanics engine with smooth client-side interpolation and rock-solid server-authoritative collision resolution.',
+      architecture: `1. Workspace.BladeBallArena: Circular arena with barrier collision walls.
+2. ServerScriptService.BladeBallServer (Server Script)
+3. ReplicatedStorage.BallRemotes:
+   - RemoteEvent "BlockAttempt" (Client -> Server)
+   - RemoteEvent "BallTargetChanged" (Server -> All Clients)
+   - RemoteEvent "ClashEffect" (Server -> All Clients)
+4. StarterPlayer.StarterPlayerScripts.BladeBallClient (LocalScript with F / Left-Click keybindings)`,
+      coreMechanic: `1. Spawning: Arena spawns a glowing neon red sphere (AssemblyLinearVelocity physics). Target is assigned to a random alive player in the arena.
+2. Homing Loop: In RunService.Heartbeat, calculate direction = (targetRoot.Position - ball.Position).Unit. Apply linear velocity at BaseSpeed (starts at 35 studs/s).
+3. Deflection Timing: When target presses F or Click, client fires "BlockAttempt". Server verifies ball distance <= 18 studs from target. If valid, pick a new random alive target (excluding current), increment Speed by 12%, play clash sound/particles, and update target highlight.
+4. Elimination: If distance <= 3 studs and target did not block, call Humanoid:TakeDamage(1000) or BreakJoints(). The last player who successfully deflected receives +1 Win and +50 Gems.`,
+      securityAndNetworking: `1. Server maintains authoritative ownership of the ball velocity and target player.
+2. Clients cannot redirect the ball to an arbitrary player; the server selects the next target.
+3. Server enforces a 0.6s cooldown on block attempts to prevent spam-blocking autoclickers.`,
+      codeContract: `Provide fully typed (--!strict) production scripts for ServerScriptService.BladeBallServer and StarterPlayerScripts.BladeBallClient with complete target rotation, alive player arrays, and clash animations.`
+    },
     monetizationAdvice: 'Sell Sword Cosmetic Skins (crates/gacha), Custom Ability Cards (Teleport, Forcefield, Dash), and Finishers.'
   },
   {
@@ -107,7 +188,22 @@ export const HIT_GAMES_LIST: HitGameBlueprint[] = [
       '4. When sitting in VehicleSeat, vehicle only moves if Engine is installed, Fuel > 0, and Coolant is not empty.',
       '5. Script an infinite desert road generator that spawns new gas stations and abandoned huts every 1,000 studs.'
     ],
-    aiPrompt: 'Create a Roblox Luau vehicle assembly and fluid system. A car model has slots for Engine, Radiator, and 4 Wheels. Scrap parts can be picked up with ProximityPrompts and snapped into place with WeldConstraints. A FuelCan tool has a liquid capacity (20L); pouring it into the FuelCap increases the car\'s Fuel value. The VehicleSeat script only activates Throttle if Fuel > 0, deducting 0.1L per second while driving.',
+    promptSections: {
+      roleAndContext: 'You are a Senior Roblox Vehicle Physics & Gameplay Engineer. Create a modular vehicle assembly, fluid mechanics, and procedural road streaming system modeled after "a dusty trip".',
+      architecture: `1. Workspace.CarModel: Chassis model with VehicleSeat, 4 WheelHub snap attachments, EngineBay snap attachment, Radiator snap attachment, and FuelTank NumberValue (0-50L).
+2. ServerScriptService.CarAssemblyEngine (Server Script)
+3. ServerScriptService.RoadStreamer (Server Script)
+4. ReplicatedStorage.VehicleEvents.PourFluid (RemoteEvent)
+5. StarterPack.FuelCanTool (Tool with liquid level logic)`,
+      coreMechanic: `1. Snap Assembly: Parts tagged "CarPart" (Engine, Radiator, Wheel) have ProximityPrompts. When brought near matching chassis attachment (<= 4 studs), weld with WeldConstraint and set installed status = true.
+2. Fluid Dynamics: FuelCan tool contains 20.0 Liters. Pouring into FuelCap part increments tank fuel and decrements can volume at 2.0 L/sec with sound effect.
+3. Drivetrain Loop: VehicleSeat only enables Throttle/Steer if EngineInstalled == true, RadiatorInstalled == true, and Fuel > 0. Every second of driving consumes 0.15L Fuel and generates +1.2°C Radiator Heat. If heat exceeds 110°C without Coolant, the engine stalls with smoke particles.
+4. Procedural Road: RoadStreamer continuously monitors car position and clones 500-stud asphalt wasteland chunks 2,000 studs ahead, despawning distant chunks behind to preserve memory.`,
+      securityAndNetworking: `1. All fluid volumes and part attachments are verified on the server.
+2. Sitting in VehicleSeat uses standard Roblox network ownership: vehicle:SetNetworkOwner(driver).
+3. Parts dropped by exploiters outside the map boundaries are clamped and respawned.`,
+      codeContract: `Provide clean, modular, typed Luau scripts for CarAssemblyEngine and FluidSystem handling snap-welds, fluid pouring, and vehicle drivetrain throttling.`
+    },
     monetizationAdvice: 'Sell Starter Jerry Cans, Emergency Radiator Coolant, Radio GamePass (custom boombox music), and armored vehicle bodykits.'
   },
   {
@@ -131,7 +227,24 @@ export const HIT_GAMES_LIST: HitGameBlueprint[] = [
       '4. Add special trait skills (Direct Shot, King\'s Dribble, Snake Slide) mapped to Q, E, R keys.',
       '5. Add an Ability Roll NPC in the lobby where players spin for traits with distinct rarity percentages.'
     ],
-    aiPrompt: 'Write a Roblox Luau football ball-handling and curved shoot system. When a player touches a SoccerBall part, parent ownership to the player and update ball CFrame in RunService.RenderStepped directly 3 studs in front of the character. When user presses LeftClick, calculate a forward launch Vector3 with an upward curve using AssemblyLinearVelocity, and grant goal detection when ball hits a GoalBox Part.',
+    promptSections: {
+      roleAndContext: 'You are an Elite Roblox Combat & Sports Gameplay Programmer. Build an anime-style football ball possession, curved kick, and trait ability framework inspired by "Blue Lock: Rivals".',
+      architecture: `1. Workspace.Stadium: Pitch model, LeftGoalPart, RightGoalPart, and SoccerBall (AssemblyLinearVelocity sphere).
+2. ServerScriptService.SoccerMatchManager (Server Script)
+3. ReplicatedStorage.BallEvents:
+   - RemoteEvent "ShootBall" (Client -> Server: ChargePower, CurveDirection)
+   - RemoteEvent "UseTraitAbility" (Client -> Server: TraitName)
+   - RemoteEvent "GoalScored" (Server -> All Clients)
+4. StarterPlayer.StarterCharacterScripts.BallDribbleController (LocalScript)`,
+      coreMechanic: `1. Dribble Attachment: When a player's character touches the SoccerBall, set possession. In client RenderStepped, lerp ball CFrame to Character.HumanoidRootPart.CFrame * CFrame.new(0, -1.8, -2.5).
+2. Charged Curve Kick: Holding Left Click fills ShotPower from 0 to 100 over 1.2s. On release, calculate impulse Vector3 = LookVector * (ShotPower * 1.5) + Vector3.new(0, ShotPower * 0.4, 0). Add lateral spin curve force using AssemblyAngularVelocity.
+3. Goal Detection: Touched event on LeftGoalPart / RightGoalPart verifies ball entry, awards +1 Goal to leaderstats, plays anime stadium horn, and resets ball to center kick-off position.
+4. Trait Abilities: Q key triggers "Direct Shot" (instant 100% volley without charging if ball is within 8 studs in mid-air).`,
+      securityAndNetworking: `1. Ball possession handoff is validated on the server with distance checks (<= 7 studs).
+2. ShotPower is clamped on the server (max 150 studs/sec) to block exploiter super-kicks.
+3. Goal detection is strictly calculated by server touch parts with a 3-second debounce post-goal.`,
+      codeContract: `Provide production-quality strict Luau scripts for SoccerMatchManager and BallDribbleController with possession transfer, curved kick impulse math, and goal reset routines.`
+    },
     monetizationAdvice: 'Sell Ability Trait Rerolls (Developer Products) and Custom Goal Celebration VFX / Anime Auras.'
   },
   {
@@ -155,7 +268,22 @@ export const HIT_GAMES_LIST: HitGameBlueprint[] = [
       '4. Play dramatic screen shake and sound effect if player rolls rare item (> 1 in 1,000).',
       '5. Allow player to place pedestals on their plot to display their rarest auras to friends.'
     ],
-    aiPrompt: 'Write a Roblox Luau RNG rolling engine. Define an array of Auras with Name, Odds (e.g. Common 1/2, Rare 1/10, Legendary 1/500, Galactic 1/100000), and Color. When client clicks Roll button, compute random roll on server with luck multiplier support. Return the won aura, equip neon particle effects onto character, and broadcast a global chat message if the aura rarity is higher than 1 in 10,000.',
+    promptSections: {
+      roleAndContext: 'You are a Senior Roblox Studio Systems Engineer. Build an idle RNG rolling engine and base display system modeled after "Sol\'s RNG" and "Build a base RNG" with weighted probabilities, luck multipliers, and aura equipping.',
+      architecture: `1. ReplicatedStorage.AuraConfig (ModuleScript containing Aura table: Name, Odds, TierColor, ParticleEffectName)
+2. ReplicatedStorage.RNGEvents.RequestRoll (RemoteFunction: Client -> Server)
+3. ReplicatedStorage.RNGEvents.EquipAura (RemoteEvent: Client -> Server)
+4. ServerScriptService.RNGServer (Server Script)
+5. StarterGui.RNGScreenGui (Roll Button, Auto-Roll toggle, Inventory ScrollFrame)`,
+      coreMechanic: `1. Rarity Table: Array of auras sorted by rarity: Common (1 in 2), Emerald (1 in 50), Galaxy (1 in 5,000), Supernova (1 in 150,000), Celestial (1 in 1,000,000), Archangel (1 in 25,000,000).
+2. Roll Algorithm: Server calculates roll = Random.new():NextNumber(0, 1) / (PlayerLuckMultiplier). Iterate through auras in ascending rarity to return the highest tier won.
+3. Roll Cutscene: If rolled aura odds >= 1 in 10,000, return a special flag so client triggers camera shake, golden beams, and global server chat announcement: "[GLOBAL] Player just rolled CELESTIAL (1 in 1,000,000)!"
+4. Aura Equipping: Equipping parents ParticleEmitters to character UpperTorso and adds a stylized BillboardGui title above avatar.`,
+      securityAndNetworking: `1. The client NEVER computes the roll result; Random.new() runs 100% on the server.
+2. Enforce a 3.0s cooldown between manual rolls (or 1.0s if player owns Auto-Roll GamePass).
+3. Inventory stores auras by string IDs in DataStore with pcall save guards.`,
+      codeContract: `Provide complete strict Luau code for ReplicatedStorage.AuraConfig, ServerScriptService.RNGServer, and StarterGui roll controllers with full type annotations.`
+    },
     monetizationAdvice: 'Sell 2x Luck Potions (15 min), Auto-Roll GamePass, and Aura Storage Expansion passes.'
   },
   {
@@ -180,7 +308,24 @@ export const HIT_GAMES_LIST: HitGameBlueprint[] = [
       '5. Harvested crops are sold at the barn stall for Coins to buy Golden Chicken Eggs.',
       '6. Hatch chickens with randomized Attack, Speed, and Health stats for auto-arena battles.'
     ],
-    aiPrompt: 'Write a Roblox Luau garden farming tile script. A DirtTile model has a ProximityPrompt. When player holds a Seed tool, plant it, setting growth Stage = 1. Using task.spawn, every 10 seconds scale the plant model CFrame/Size by 1.5x until Stage 4 (Mature). When mature, change prompt to "Harvest (+50 Coins)" and reset soil tile. Include support for watering can tool that doubles growth rate.',
+    promptSections: {
+      roleAndContext: 'You are a Senior Roblox Gameplay Programmer. Build a farm plot growth cycle, crop harvesting, and pet breeder hatching system inspired by "Grow a Garden".',
+      architecture: `1. Workspace.GardenPlots: Folder containing 3x3 SoilTile models with DirtPart, PlantSnap attachment, and ProximityPrompt.
+2. ServerScriptService.GardenManager (Server Script)
+3. ReplicatedStorage.GardenEvents:
+   - RemoteEvent "PlantSeed" (Client -> Server)
+   - RemoteEvent "WaterTile" (Client -> Server)
+   - RemoteEvent "HarvestCrop" (Client -> Server)
+4. StarterPack.WaterCanTool and StarterPack.SeedPouchTool`,
+      coreMechanic: `1. Soil State Machine: Each tile has States: Empty -> Seeded -> Growing -> Mature -> Wilted.
+2. Growth Tween: When seeded, spawn crop model at Vector3.new(0.1, 0.1, 0.1). Using TweenService, scale model size to 1.0x over BaseGrowthDuration (45s).
+3. Water Mechanics: Holding WaterCan tool on tile halves remaining growth duration and changes soil color to dark brown mud.
+4. Harvesting: When state == Mature, ProximityPrompt changes to "Harvest (+40 Coins)". Clicking harvests crop, awards Coins, and resets tile to Empty state.`,
+      securityAndNetworking: `1. Server maintains timestamps (PlantTime, WaterTime) to compute exact growth states regardless of client lag.
+2. Verify player distance <= 12 studs from soil tile before allowing plant or harvest actions.
+3. Prevent duplicate harvest payouts using atomic state transitions.`,
+      codeContract: `Provide complete strict Luau scripts for GardenManager with full state machine handling, plant scaling, and leaderstats coin awards.`
+    },
     monetizationAdvice: 'Sell Auto-Waterer Sprinkler (GamePass), 2x Crop Value Multiplier, and Golden Egg Hatch booster.'
   },
   {
@@ -204,7 +349,25 @@ export const HIT_GAMES_LIST: HitGameBlueprint[] = [
       '4. Award Uranium energy points per merge.',
       '5. Once the maximum "Tsar Bomba" is achieved, player triggers a launch cutscene that obliterates a target test dummy town for massive rebirth points.'
     ],
-    aiPrompt: 'Write a Roblox Luau merge game script. When player clicks, drop a sphere bomb from top spawner. Each bomb has an IntValue "Level". Connect a Touched event: if two parts with the same Level touch, destroy one part, increment the other to Level+1, scale size by 1.25x, play a pop sound, and award Points = Level * 50 to the player leaderstats.',
+    promptSections: {
+      roleAndContext: 'You are a Senior Roblox Casual Mechanics Engineer. Build a physics dropper 2048-style merge engine inspired by "Merge a Nuke!" with identical collision fusing, pop animations, and nuclear launch rebirths.',
+      architecture: `1. Workspace.MergeContainer: Glass container box with dropper beam overhead.
+2. ServerScriptService.MergeGameManager (Server Script)
+3. ReplicatedStorage.MergeEvents.DropBomb (RemoteEvent: Client -> Server: dropXPosition)
+4. StarterGui.DropperGui (Mouse drag tracker on top boundary)`,
+      coreMechanic: `1. Drop Control: Player aims mouse along X-axis. Clicking fires DropBomb. Server spawns Sphere Bomb at drop position with IntValue Level (Level 1 to Level 10).
+2. Collision Fusing: Touched listener on bombs checks: if (other.Name == "Bomb" and other.Level.Value == self.Level.Value and not self.Merging and not other.Merging) then:
+   - Set Merging = true on both parts to prevent infinite loops.
+   - Calculate midpoint = (self.Position + other.Position) / 2.
+   - Destroy both parts.
+   - Spawn new Bomb of Level + 1 at midpoint, scaling size by 1.25x with a spring bounce tween.
+   - Award Points = Level * 50 to player Uranium score.
+3. Tsar Bomba Rebirth: Reaching Level 10 unlocks orbital launch button to wipe the jar and grant 10x multiplier.`,
+      securityAndNetworking: `1. Clamp dropXPosition on server to prevent players spawning bombs outside the container.
+2. Enforce a 0.8s cooldown between drops.
+3. Merging lock flag prevents double-fusion race conditions.`,
+      codeContract: `Provide complete strict Luau scripts for ServerScriptService.MergeGameManager and client mouse drag drop controller.`
+    },
     monetizationAdvice: 'Sell Bomb Shaker (agitates trapped bombs), Rainbow Wildcard Bomb (merges with anything), and 2x Energy pass.'
   },
   {
@@ -228,7 +391,19 @@ export const HIT_GAMES_LIST: HitGameBlueprint[] = [
       '4. Add Punch tool: deals damage equal to Strength * 0.1 to non-safezone players.',
       '5. Add Treadmills that increment Agility while walking on them.'
     ],
-    aiPrompt: 'Write a complete Roblox Luau weight lifting simulator script. When player activates Dumbbell tool, play curl animation and add +2 Strength. Connect a leaderstat listener: every time Strength increases, update the player\'s character Humanoid scales (BodyHeightScale, BodyWidthScale, BodyDepthScale, HeadScale) proportionally up to a max 3x scale. In the center arena, allow players with Punch tool to deal damage based on their Strength stat.',
+    promptSections: {
+      roleAndContext: 'You are a Senior Roblox Simulator Developer. Build a complete character size-scaling workout simulator script modeled after "Muscle Legends".',
+      architecture: `1. StarterPack.DumbbellTool (Tool with curl animation)
+2. StarterPack.PunchTool (Combat tool)
+3. ServerScriptService.WorkoutManager (Server Script)
+4. Workspace.GymSafeZone (Part tagged "SafeZone" with ForceField logic)`,
+      coreMechanic: `1. Lifting: When DumbbellTool activates, server plays lifting animation track and adds +1 Strength (or +2 if player has VIP pass).
+2. Proportional Scaling: Listen to Strength.Changed. Calculate scaleFactor = math.clamp(1 + (Strength / 10000) * 2, 1.0, 3.5). Update Humanoid scales: BodyHeightScale = scaleFactor, BodyWidthScale = scaleFactor, BodyDepthScale = scaleFactor, HeadScale = math.clamp(scaleFactor * 0.75, 1, 2).
+3. Combat Arena: Punch tool deals Damage = math.max(10, Strength * 0.05). If victim is inside GymSafeZone, damage is negated.`,
+      securityAndNetworking: `1. Rate-limit dumbbell clicks on server to 0.4s to prevent macro exploiters clicking 100 times per second.
+2. Character size updates execute on server HumanoidDescription to replicate across all players.`,
+      codeContract: `Provide complete strict Luau code for ServerScriptService.WorkoutManager with scale calculation math and safe zone combat protection.`
+    },
     monetizationAdvice: 'Sell 2x Strength GamePass, Auto-Lift (infinite clicks), +3 Pets Equipped, and Instant Rebirth packs.'
   },
   {
@@ -252,7 +427,29 @@ export const HIT_GAMES_LIST: HitGameBlueprint[] = [
       '4. Display an on-screen kill counter and streak sound effect ("Double Kill", "Unstoppable").',
       '5. Add weapon case unboxing in the shop with animated skins.'
     ],
-    aiPrompt: 'Write a Roblox Luau Server-Authoritative Gun & Knife script. Gun uses workspace:Raycast from camera to mouse position. Validate on server that player has line of sight and ammo. If raycast hits a character head, deal 150 damage, if torso 100 damage. Spawn bullet tracer beam from barrel to hit point. Knife can be thrown using an AlignOrientation / LinearVelocity projectile that sticks into walls or kills on contact.',
+    promptSections: {
+      roleAndContext: 'You are an Elite Roblox FPS/Combat Gameplay Engineer. Engineer a server-authoritative Revolver & Throwing Knife combat system inspired by "Murderers VS Sheriffs" and "Baddies".',
+      architecture: `1. StarterPack.RevolverTool (Hitscan Gun)
+2. StarterPack.KnifeTool (Melee + Throwing Knife)
+3. ServerScriptService.WeaponManager (Server Script)
+4. ReplicatedStorage.CombatEvents:
+   - RemoteServer "FireBullet" (Client -> Server: origin, targetDirection)
+   - RemoteServer "ThrowKnife" (Client -> Server: throwOrigin, throwVelocity)
+   - RemoteEvent "SpawnTracer" (Server -> All Clients)
+   - RemoteEvent "KillfeedNotification" (Server -> All Clients)`,
+      coreMechanic: `1. Revolver Hitscan: Client clicks, fires "FireBullet". Server casts workspace:Raycast from barrel position along targetDirection (max 300 studs). If ray hits a character: Headshot = 150 damage (instant kill), Body = 90 damage. Spawn bullet tracer beam between barrel and hit point.
+2. Throwing Knife: Right click throws a physics knife Part equipped with LinearVelocity and AlignOrientation. When knife hits a player, deal 100 damage and stick knife into surface.
+3. Fast Respawn: Dead players respawn after 2.0s at random spawn points with full weapon kit.`,
+      securityAndNetworking: `1. Server verifies shooter line of sight from character head to target to prevent wall-bang exploits.
+2. Server validates ammo count and enforces 0.8s fire rate cooldown.
+3. Damage is strictly awarded on the server.`,
+      codeContract: `Provide complete strict Luau code for WeaponManager and RevolverTool client controller with raycast hit validation and tracer spawning.`
+    },
     monetizationAdvice: 'Sell Custom Knife Skins (Chroma, Neon, Flame), Kill Sound Effects, and Custom Footstep Trails.'
   }
 ];
+
+export const HIT_GAMES_LIST: HitGameBlueprint[] = rawGames.map((game) => ({
+  ...game,
+  aiPrompt: format5SectionPrompt(game.promptSections, game.title)
+}));
