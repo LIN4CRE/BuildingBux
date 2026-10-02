@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { DollarSign, AlertCircle, CheckCircle2, TrendingUp, HelpCircle, ArrowUpRight, ArrowLeftRight, Sparkles, X, ExternalLink, PartyPopper, Plus, Trash2, Calendar, History, BarChart2 } from 'lucide-react';
+import { DollarSign, AlertCircle, CheckCircle2, TrendingUp, HelpCircle, ArrowUpRight, ArrowLeftRight, Sparkles, X, ExternalLink, PartyPopper, Plus, Trash2, Calendar, History, BarChart2, Globe, Coins, Settings2, RotateCcw } from 'lucide-react';
 import { RobuxIcon, SterlingCoinIcon, DevExVaultIcon, RobuxGoldIcon } from './Icons';
 import { sounds } from '../utils/audio';
 
@@ -22,6 +22,13 @@ export const DevExCalculator: React.FC = () => {
   const [grossRobux, setGrossRobux] = useState<number>(100000);
   const [usdToGbpRate, setUsdToGbpRate] = useState<number>(0.78); // £0.78 per $1 USD (~ £1 = $1.28 USD)
   const [isGrossInput, setIsGrossInput] = useState<boolean>(true); // true = gross sales, false = net earned robux
+
+  // Global Multi-Currency Rates (per $1.00 USD)
+  const [usdToEurRate, setUsdToEurRate] = useState<number>(0.92); // €0.92 per $1 USD
+  const [usdToCadRate, setUsdToCadRate] = useState<number>(1.36); // CA$1.36 per $1 USD
+  const [usdToAudRate, setUsdToAudRate] = useState<number>(1.52); // AU$1.52 per $1 USD
+  const [usdToJpyRate, setUsdToJpyRate] = useState<number>(152.0); // ¥152 per $1 USD
+  const [showFxSettings, setShowFxSettings] = useState<boolean>(false);
 
   // Target Reverse Calculator
   const [targetGbp, setTargetGbp] = useState<number>(1000); // e.g. "I want to earn £1,000/mo"
@@ -381,6 +388,213 @@ export const DevExCalculator: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* -------------------- DYNAMIC GLOBAL CURRENCY CONVERTER MATRIX -------------------- */}
+      {(() => {
+        const devexEur = devexUsd * usdToEurRate;
+        const devexCad = devexUsd * usdToCadRate;
+        const devexAud = devexUsd * usdToAudRate;
+        const devexJpy = devexUsd * usdToJpyRate;
+
+        const currencies = [
+          {
+            code: 'GBP',
+            symbol: '£',
+            name: 'British Pound Sterling',
+            amount: devexGbp,
+            badge: 'UK Home Bank',
+            rateText: `£${usdToGbpRate.toFixed(2)} per $1 USD`,
+            color: 'text-emerald-300 border-emerald-500/40 bg-emerald-950/20'
+          },
+          {
+            code: 'USD',
+            symbol: '$',
+            name: 'United States Dollar',
+            amount: devexUsd,
+            badge: 'DevEx Base Rate',
+            rateText: '$0.0035 per Earned R$',
+            color: 'text-sky-300 border-sky-500/30 bg-sky-950/20'
+          },
+          {
+            code: 'EUR',
+            symbol: '€',
+            name: 'European Euro',
+            amount: devexEur,
+            badge: 'EU / SEPA Bank',
+            rateText: `€${usdToEurRate.toFixed(2)} per $1 USD`,
+            color: 'text-blue-300 border-blue-500/30 bg-blue-950/20'
+          },
+          {
+            code: 'CAD',
+            symbol: 'CA$',
+            name: 'Canadian Dollar',
+            amount: devexCad,
+            badge: 'Canada Direct',
+            rateText: `$${usdToCadRate.toFixed(2)} per $1 USD`,
+            color: 'text-red-300 border-red-500/30 bg-red-950/20'
+          },
+          {
+            code: 'AUD',
+            symbol: 'AU$',
+            name: 'Australian Dollar',
+            amount: devexAud,
+            badge: 'Australia Wire',
+            rateText: `$${usdToAudRate.toFixed(2)} per $1 USD`,
+            color: 'text-amber-300 border-amber-500/30 bg-amber-950/20'
+          },
+          {
+            code: 'JPY',
+            symbol: '¥',
+            name: 'Japanese Yen',
+            amount: devexJpy,
+            badge: 'Asia-Pacific',
+            rateText: `¥${usdToJpyRate.toFixed(0)} per $1 USD`,
+            color: 'text-purple-300 border-purple-500/30 bg-purple-950/20'
+          }
+        ];
+
+        return (
+          <div className="bg-[#101726] border border-slate-800 rounded-xl p-5 sm:p-6 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+              <div>
+                <div className="flex items-center gap-2 text-xs font-mono text-emerald-400 mb-1">
+                  <Globe className="w-3.5 h-3.5" />
+                  <span>Global DevEx Currency Converter</span>
+                </div>
+                <h3 className="text-base font-bold text-white font-display">
+                  Global Multi-Currency Payout Matrix
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  See your net DevEx payout value ({netRobux.toLocaleString()} R$) converted in real-time across major world currencies.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  sounds.playClick();
+                  setShowFxSettings(!showFxSettings);
+                }}
+                className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white text-xs rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
+              >
+                <Settings2 className="w-3.5 h-3.5" />
+                <span>{showFxSettings ? 'Close FX Rates' : 'Adjust FX Rates'}</span>
+              </button>
+            </div>
+
+            {/* Expandable FX Settings Panel */}
+            {showFxSettings && (
+              <div className="bg-[#0b0f17] border border-slate-800 p-4 rounded-xl space-y-3 animate-in fade-in duration-200 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-white flex items-center gap-1.5">
+                    <Coins className="w-3.5 h-3.5 text-emerald-400" />
+                    Custom Foreign Exchange Pegs (Per $1.00 USD):
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sounds.playClick();
+                      setUsdToGbpRate(0.78);
+                      setUsdToEurRate(0.92);
+                      setUsdToCadRate(1.36);
+                      setUsdToAudRate(1.52);
+                      setUsdToJpyRate(152.0);
+                    }}
+                    className="text-[11px] text-slate-400 hover:text-emerald-400 flex items-center gap-1 cursor-pointer"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>Reset Defaults</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                  <div>
+                    <label className="text-[11px] text-slate-400 block mb-1">GBP (£)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={usdToGbpRate}
+                      onChange={(e) => setUsdToGbpRate(parseFloat(e.target.value) || 0.78)}
+                      className="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-white font-mono text-xs focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] text-slate-400 block mb-1">EUR (€)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={usdToEurRate}
+                      onChange={(e) => setUsdToEurRate(parseFloat(e.target.value) || 0.92)}
+                      className="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-white font-mono text-xs focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] text-slate-400 block mb-1">CAD (CA$)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={usdToCadRate}
+                      onChange={(e) => setUsdToCadRate(parseFloat(e.target.value) || 1.36)}
+                      className="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-white font-mono text-xs focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] text-slate-400 block mb-1">AUD (AU$)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={usdToAudRate}
+                      onChange={(e) => setUsdToAudRate(parseFloat(e.target.value) || 1.52)}
+                      className="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-white font-mono text-xs focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] text-slate-400 block mb-1">JPY (¥)</label>
+                    <input
+                      type="number"
+                      step="1"
+                      value={usdToJpyRate}
+                      onChange={(e) => setUsdToJpyRate(parseFloat(e.target.value) || 152)}
+                      className="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-white font-mono text-xs focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Currencies Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+              {currencies.map((curr) => (
+                <div
+                  key={curr.code}
+                  className={`border rounded-xl p-3 flex flex-col justify-between transition-all hover:scale-[1.02] ${curr.color}`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-xs font-bold font-mono text-white">{curr.code}</span>
+                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-slate-900/80 border border-slate-800 text-slate-400">
+                        {curr.badge}
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-slate-400 truncate">{curr.name}</div>
+                  </div>
+
+                  <div className="mt-3 pt-2 border-t border-slate-800/60">
+                    <div className="text-base sm:text-lg font-bold font-mono text-white tabular-nums">
+                      {curr.code === 'JPY'
+                        ? `¥${Math.round(curr.amount).toLocaleString()}`
+                        : `${curr.symbol}${curr.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                    </div>
+                    <div className="text-[10px] text-slate-500 font-mono mt-0.5 truncate">
+                      {curr.rateText}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Reverse Calculator: "I want to earn £X/mo - How much Robux do I need?" */}
       <div className="bg-[#101726] border border-slate-800 rounded-xl p-5">

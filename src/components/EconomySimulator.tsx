@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Users, Coins, Sparkles, TrendingUp, Calendar, Clock, HelpCircle, BarChart3, Sliders, Layers, ArrowUpRight, TrendingDown, ExternalLink } from 'lucide-react';
+import { Users, Coins, Sparkles, TrendingUp, Calendar, Clock, HelpCircle, BarChart3, Sliders, Layers, ArrowUpRight, TrendingDown, ExternalLink, Lightbulb, Zap, Tag, Timer, ShoppingBag, CheckCircle2, AlertTriangle, ArrowRight } from 'lucide-react';
 import { RobuxIcon, SterlingCoinIcon, DevExVaultIcon, RobuxGoldIcon } from './Icons';
 import { sounds } from '../utils/audio';
 
@@ -27,6 +27,11 @@ export const EconomySimulator: React.FC = () => {
   const [monthlyGrowthRate, setMonthlyGrowthRate] = useState<number>(10); // 10% monthly user growth
   const [monthlyChurnRate, setMonthlyChurnRate] = useState<number>(4); // 4% monthly player churn/decay
   const [hoveredMonth, setHoveredMonth] = useState<number | null>(null);
+
+  // Optimization Strategy Switchboard
+  const [applyStarterPack, setApplyStarterPack] = useState<boolean>(true);
+  const [applyWeekendLTO, setApplyWeekendLTO] = useState<boolean>(true);
+  const [applyUIOptimization, setApplyUIOptimization] = useState<boolean>(false);
 
   // --- MODEL 1: DAU + ARPDAU CALCULATIONS ---
   const arpdauDailyGrossRobux = Math.round(dauInput * arpdauRobux);
@@ -567,6 +572,195 @@ export const EconomySimulator: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* -------------------- ACTIONABLE ARPDAU OPTIMIZATION STRATEGIES -------------------- */}
+      {(() => {
+        const currentBaseArpdau = calculationMode === 'arpdau' ? arpdauRobux : (funnelDau > 0 ? dailyGrossGameRobux / funnelDau : 0.65);
+        const starterPackBoost = applyStarterPack ? 0.25 : 0;
+        const weekendLTOBoost = applyWeekendLTO ? 0.30 : 0;
+        const uiOptimizationBoost = applyUIOptimization ? 0.15 : 0;
+        const totalBoostRate = starterPackBoost + weekendLTOBoost + uiOptimizationBoost;
+        const optimizedArpdau = currentBaseArpdau * (1 + totalBoostRate);
+        const baselineMonthlyGbp = calculationMode === 'arpdau' ? arpdauMonthlyDevExGbp : funnelMonthlyDevExGbp;
+        const optimizedMonthlyGbp = baselineMonthlyGbp * (1 + totalBoostRate);
+        const extraGainGbp = optimizedMonthlyGbp - baselineMonthlyGbp;
+
+        return (
+          <div className="bg-[#101726] border border-slate-800 rounded-xl p-6 space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+              <div>
+                <div className="flex items-center gap-2 text-xs font-mono text-emerald-400 mb-1">
+                  <Lightbulb className="w-3.5 h-3.5" />
+                  <span>Economy Optimization Playbook</span>
+                </div>
+                <h2 className="text-lg font-bold text-white font-display">
+                  Live ARPDAU Optimization Strategies
+                </h2>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Actionable monetization levers based on your current simulation ({currentBaseArpdau.toFixed(2)} R$ ARPDAU). Toggle levers below to simulate real-time revenue expansion.
+                </p>
+              </div>
+
+              {/* Optimization Uplift Metric */}
+              <div className="bg-emerald-950/30 border border-emerald-500/40 p-3 rounded-xl text-right shrink-0">
+                <span className="text-[10px] text-emerald-300 font-mono block uppercase">Simulated Potential Uplift</span>
+                <span className="text-xl font-black font-mono text-emerald-300">
+                  +£{extraGainGbp.toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} / mo
+                </span>
+                <span className="text-[10px] text-slate-400 block font-mono">
+                  ARPDAU: {currentBaseArpdau.toFixed(2)} R$ → <strong className="text-emerald-400">{optimizedArpdau.toFixed(2)} R$</strong> (+{Math.round(totalBoostRate * 100)}%)
+                </span>
+              </div>
+            </div>
+
+            {/* Interactive Switchboard */}
+            <div className="bg-[#0b0f17] border border-slate-800 rounded-xl p-4 space-y-3">
+              <span className="text-xs font-bold text-slate-300 block">
+                Toggle Live-Ops Optimization Levers:
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    sounds.playClick();
+                    setApplyStarterPack(!applyStarterPack);
+                  }}
+                  className={`p-3 rounded-lg border text-left transition-all cursor-pointer ${
+                    applyStarterPack
+                      ? 'bg-slate-900 border-emerald-500/60 text-white shadow-sm'
+                      : 'bg-[#080c13] border-slate-800 text-slate-400 hover:border-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between text-xs font-bold mb-1">
+                    <span className="flex items-center gap-1.5">
+                      <ShoppingBag className="w-3.5 h-3.5 text-emerald-400" />
+                      FTUE Starter Pack
+                    </span>
+                    <span className="font-mono text-emerald-400 text-[10px]">+25% Lift</span>
+                  </div>
+                  <p className="text-[10px] text-slate-400 leading-relaxed">
+                    29–49 R$ impulse pack within first 15 mins. Converts non-payers into lifelong spenders.
+                  </p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    sounds.playClick();
+                    setApplyWeekendLTO(!applyWeekendLTO);
+                  }}
+                  className={`p-3 rounded-lg border text-left transition-all cursor-pointer ${
+                    applyWeekendLTO
+                      ? 'bg-slate-900 border-emerald-500/60 text-white shadow-sm'
+                      : 'bg-[#080c13] border-slate-800 text-slate-400 hover:border-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between text-xs font-bold mb-1">
+                    <span className="flex items-center gap-1.5">
+                      <Timer className="w-3.5 h-3.5 text-amber-400" />
+                      48h Weekend LTO Events
+                    </span>
+                    <span className="font-mono text-amber-400 text-[10px]">+30% Lift</span>
+                  </div>
+                  <p className="text-[10px] text-slate-400 leading-relaxed">
+                    Limited-time 2x boost weekends with countdown timers to capture player traffic surges.
+                  </p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    sounds.playClick();
+                    setApplyUIOptimization(!applyUIOptimization);
+                  }}
+                  className={`p-3 rounded-lg border text-left transition-all cursor-pointer ${
+                    applyUIOptimization
+                      ? 'bg-slate-900 border-emerald-500/60 text-white shadow-sm'
+                      : 'bg-[#080c13] border-slate-800 text-slate-400 hover:border-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between text-xs font-bold mb-1">
+                    <span className="flex items-center gap-1.5">
+                      <Tag className="w-3.5 h-3.5 text-sky-400" />
+                      Store UI A/B Testing
+                    </span>
+                    <span className="font-mono text-sky-400 text-[10px]">+15% Lift</span>
+                  </div>
+                  <p className="text-[10px] text-slate-400 leading-relaxed">
+                    Visual badge hierarchy ("Best Value", "Popular") and contextual victory prompting.
+                  </p>
+                </button>
+              </div>
+            </div>
+
+            {/* In-Depth Actionable Strategies Breakdown */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+              {/* Card 1: FTUE Starter Pack */}
+              <div className="bg-[#0b0f17] border border-slate-800 rounded-xl p-4 space-y-2.5 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2 font-bold text-white mb-1">
+                    <Zap className="w-3.5 h-3.5 text-amber-400" />
+                    <span>1. FTUE "First-Spender" Funnel</span>
+                  </div>
+                  <p className="text-slate-300 text-[11px] leading-relaxed">
+                    Over 96% of Roblox players never spend real money because the psychological friction of the first purchase is immense.
+                  </p>
+                  <div className="mt-2 space-y-1 text-[11px] text-slate-400">
+                    <div>• <strong>Price Point:</strong> 29 R$ or 49 R$ (cost of 1 donut).</div>
+                    <div>• <strong>Value Anchor:</strong> Bundle 5x value (Exclusive Pet + 3x Coins for 1 hr + Title).</div>
+                    <div>• <strong>Impact:</strong> Spenders who buy a starter pack are <strong>400% more likely</strong> to buy subsequent game passes!</div>
+                  </div>
+                </div>
+                <div className="pt-2 border-t border-slate-800/80 text-[10px] text-emerald-400 font-mono">
+                  Recommended for: All genres under 0.80 R$ ARPDAU
+                </div>
+              </div>
+
+              {/* Card 2: Seasonal & Weekend LTOs */}
+              <div className="bg-[#0b0f17] border border-slate-800 rounded-xl p-4 space-y-2.5 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2 font-bold text-white mb-1">
+                    <Timer className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>2. 48-Hour Weekend LTO Timers</span>
+                  </div>
+                  <p className="text-slate-300 text-[11px] leading-relaxed">
+                    Roblox active user numbers spike by 45%–70% from Friday 5PM to Sunday midnight GMT. Capitalize with urgency.
+                  </p>
+                  <div className="mt-2 space-y-1 text-[11px] text-slate-400">
+                    <div>• <strong>Mechanism:</strong> Add a flashing BillboardGui timer: "Weekend 2x Luck Ends in 18:24:12".</div>
+                    <div>• <strong>Seasonal Drops:</strong> Limited holiday crates (Halloween, Winter, Summer) that never return.</div>
+                    <div>• <strong>Impact:</strong> Drives 60% of entire monthly revenue during a 48-hour window!</div>
+                  </div>
+                </div>
+                <div className="pt-2 border-t border-slate-800/80 text-[10px] text-emerald-400 font-mono">
+                  Recommended for: Fisch, Blade Ball &amp; Simulators
+                </div>
+              </div>
+
+              {/* Card 3: Store UI A/B Testing */}
+              <div className="bg-[#0b0f17] border border-slate-800 rounded-xl p-4 space-y-2.5 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2 font-bold text-white mb-1">
+                    <Tag className="w-3.5 h-3.5 text-sky-400" />
+                    <span>3. Store UI Hierarchy &amp; Triggers</span>
+                  </div>
+                  <p className="text-slate-300 text-[11px] leading-relaxed">
+                    Where and when you prompt purchases determines your conversion rate far more than the item graphics.
+                  </p>
+                  <div className="mt-2 space-y-1 text-[11px] text-slate-400">
+                    <div>• <strong>Contextual Prompting:</strong> Prompt a revive or 2x coin booster right after a near-victory or boss defeat, NEVER on game join or death.</div>
+                    <div>• <strong>Anchor Pricing:</strong> Display a 1,299 R$ Mega-Pass next to a 349 R$ Pass so the 349 R$ looks like a bargain.</div>
+                    <div>• <strong>Highlighting:</strong> Put a glowing neon "MOST POPULAR" banner on your target item.</div>
+                  </div>
+                </div>
+                <div className="pt-2 border-t border-slate-800/80 text-[10px] text-emerald-400 font-mono">
+                  Recommended for: PvP arenas &amp; Tycoons
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Official Roblox Portals & Analytics Quick Link Bar */}
       <div className="bg-[#0e1420] border border-slate-800 rounded-xl p-5 space-y-3">
