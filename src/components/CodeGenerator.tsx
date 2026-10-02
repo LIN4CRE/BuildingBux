@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { LUAU_CODE_TEMPLATES, LuauScriptTemplate } from '../data/luauCodeTemplates';
 import { Copy, Check, ShieldAlert, Code2, FolderTree, Terminal, Layers, Database, CreditCard, Sparkles, Filter } from 'lucide-react';
+import { sounds } from '../utils/audio';
 
 export const CodeGenerator: React.FC = () => {
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('gamepass-purchase-checks');
@@ -26,6 +27,7 @@ export const CodeGenerator: React.FC = () => {
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(currentTemplate.code);
+    sounds.playSuccess();
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -78,6 +80,7 @@ export const CodeGenerator: React.FC = () => {
               <button
                 key={cat.id}
                 onClick={() => {
+                  sounds.playClick();
                   setSelectedCategory(cat.id);
                   const firstOfCat = LUAU_CODE_TEMPLATES.find(
                     (t) => cat.id === 'all' || t.category === cat.id
@@ -104,7 +107,10 @@ export const CodeGenerator: React.FC = () => {
             return (
               <button
                 key={tmpl.id}
-                onClick={() => setSelectedTemplateId(tmpl.id)}
+                onClick={() => {
+                  sounds.playClick();
+                  setSelectedTemplateId(tmpl.id);
+                }}
                 className={`px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer shrink-0 flex items-center gap-2 ${
                   isSelected
                     ? 'bg-slate-800 text-emerald-300 border border-emerald-500/50 shadow-sm'

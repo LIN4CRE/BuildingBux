@@ -74,7 +74,14 @@ const INITIAL_POLLS: PollItem[] = [
 ];
 
 export const CommunityPolls: React.FC = () => {
-  const [polls, setPolls] = useState<PollItem[]>(INITIAL_POLLS);
+  const [polls, setPolls] = useState<PollItem[]>(() => {
+    try {
+      const saved = localStorage.getItem('blox_community_polls_data');
+      return saved ? JSON.parse(saved) : INITIAL_POLLS;
+    } catch {
+      return INITIAL_POLLS;
+    }
+  });
   const [userVotes, setUserVotes] = useState<Record<string, string>>(() => {
     try {
       const saved = localStorage.getItem('blox_community_polls_votes');
@@ -93,6 +100,14 @@ export const CommunityPolls: React.FC = () => {
       console.warn(e);
     }
   }, [userVotes]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('blox_community_polls_data', JSON.stringify(polls));
+    } catch (e) {
+      console.warn(e);
+    }
+  }, [polls]);
 
   const handleVote = (pollId: string, optionId: string) => {
     if (userVotes[pollId]) return; // already voted

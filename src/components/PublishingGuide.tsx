@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { STEP_BY_STEP_PUBLISH_ROADMAP } from '../data/freeResourcesData';
 import { CheckCircle2, ChevronRight, Clock, Sparkles, Rocket, Lightbulb } from 'lucide-react';
+import { sounds } from '../utils/audio';
 
 export const PublishingGuide: React.FC = () => {
   const [activeStep, setActiveStep] = useState<string>('01');
@@ -31,7 +32,10 @@ export const PublishingGuide: React.FC = () => {
             return (
               <button
                 key={phase.step}
-                onClick={() => setActiveStep(phase.step)}
+                onClick={() => {
+                  sounds.playClick();
+                  setActiveStep(phase.step);
+                }}
                 className={`p-3 rounded-lg border text-left transition-all cursor-pointer flex flex-col justify-between ${
                   isActive
                     ? 'bg-slate-800 border-emerald-500/60 shadow-sm'
@@ -129,6 +133,7 @@ export const PublishingGuide: React.FC = () => {
           {parseInt(currentStep.step) < 6 ? (
             <button
               onClick={() => {
+                sounds.playClick();
                 const nextNum = parseInt(currentStep.step) + 1;
                 const nextStr = nextNum < 10 ? `0${nextNum}` : `${nextNum}`;
                 setActiveStep(nextStr);
@@ -140,7 +145,10 @@ export const PublishingGuide: React.FC = () => {
             </button>
           ) : (
             <button
-              onClick={() => setActiveStep('01')}
+              onClick={() => {
+                sounds.playClick();
+                setActiveStep('01');
+              }}
               className="px-4 py-2 bg-emerald-500 text-slate-950 font-bold rounded-lg hover:bg-emerald-400 transition-colors cursor-pointer"
             >
               Back to Step 01

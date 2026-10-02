@@ -290,17 +290,19 @@ export const GamePortfolio: React.FC = () => {
               <div>
                 {/* Cover Image or Fallback Header */}
                 <div className="h-44 w-full bg-slate-900 relative overflow-hidden">
-                  {game.imageUrl ? (
+                  <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 to-[#101726] text-slate-600">
+                    <Gamepad2 className="w-10 h-10 mb-1 text-slate-500" />
+                    <span className="text-xs font-mono text-slate-400">Roblox Experience</span>
+                  </div>
+                  {game.imageUrl && (
                     <img
                       src={game.imageUrl}
                       alt={game.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLElement).style.display = 'none';
+                      }}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 absolute inset-0 z-10"
                     />
-                  ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 to-[#101726] text-slate-600">
-                      <Gamepad2 className="w-10 h-10 mb-1 text-slate-500" />
-                      <span className="text-xs font-mono text-slate-400">Roblox Experience</span>
-                    </div>
                   )}
 
                   {/* Status Badge */}

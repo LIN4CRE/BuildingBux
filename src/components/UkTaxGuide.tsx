@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Landmark, FileText, CheckCircle2, ShieldAlert, ArrowRight, ExternalLink, HelpCircle, AlertCircle, ListChecks } from 'lucide-react';
 import { UkTaxChecklist } from './UkTaxChecklist';
+import { sounds } from '../utils/audio';
 
 export const UkTaxGuide: React.FC = () => {
   const [activeView, setActiveView] = useState<'walkthrough' | 'checklist'>('walkthrough');
@@ -50,7 +51,10 @@ export const UkTaxGuide: React.FC = () => {
           {/* Sub-view switcher */}
           <div className="flex items-center p-1 bg-slate-900 border border-slate-800 rounded-lg text-xs self-start md:self-auto">
             <button
-              onClick={() => setActiveView('walkthrough')}
+              onClick={() => {
+                sounds.playClick();
+                setActiveView('walkthrough');
+              }}
               className={`px-3 py-1.5 rounded font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
                 activeView === 'walkthrough'
                   ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
@@ -61,7 +65,10 @@ export const UkTaxGuide: React.FC = () => {
               <span>Cashout Walkthrough</span>
             </button>
             <button
-              onClick={() => setActiveView('checklist')}
+              onClick={() => {
+                sounds.playClick();
+                setActiveView('checklist');
+              }}
               className={`px-3 py-1.5 rounded font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
                 activeView === 'checklist'
                   ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
@@ -82,7 +89,10 @@ export const UkTaxGuide: React.FC = () => {
               return (
                 <button
                   key={s.num}
-                  onClick={() => setActiveStep(s.num)}
+                  onClick={() => {
+                    sounds.playClick();
+                    setActiveStep(s.num);
+                  }}
                   className={`p-3 rounded-lg border text-left transition-colors cursor-pointer ${
                     isActive
                       ? 'bg-slate-800 border-emerald-500/50 shadow-sm'

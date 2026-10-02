@@ -168,7 +168,7 @@ export const MonetizationBuilder: React.FC = () => {
               Roblox Monetization Architecture & Catalog Builder
             </h1>
             <p className="text-xs text-slate-400 mt-1 max-w-2xl">
-              Design your game\'s store catalog. Customize Game Passes, Developer Products, and recurring Subscriptions with live DevEx £ revenue yields.
+              Design your game's store catalog. Customize Game Passes, Developer Products, and recurring Subscriptions with live DevEx £ revenue yields.
             </p>
           </div>
           <div className="flex items-center gap-2">

@@ -141,7 +141,7 @@ export const GrowthAlertsPanel: React.FC<GrowthAlertsPanelProps> = ({
       try {
         new Notification(testItem.title, {
           body: testItem.message,
-          icon: '/favicon.ico'
+          icon: '/favicon.svg'
         });
       } catch (e) {
         console.warn(e);

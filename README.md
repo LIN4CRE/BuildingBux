@@ -114,8 +114,8 @@ You can build complete, high-quality games without spending a penny:
 ### Installation
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/bloxmonetize-studio.git
-cd bloxmonetize-studio
+git clone https://github.com/LIN4CRE/BuildingBux.git
+cd BuildingBux
 
 # Install dependencies
 npm install
