@@ -19,6 +19,19 @@ export interface PortfolioGame {
 
 export const SAMPLE_PORTFOLIO_BENCHMARKS: PortfolioGame[] = [
   {
+    id: 'game-heist-arena',
+    title: 'Steal The Egg: Heist Arena',
+    genre: 'Social Base Heist & PvP Tug-of-War',
+    robloxUrl: 'https://www.roblox.com/games/',
+    imageUrl: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=600&q=80',
+    releaseDate: '2026-10-03',
+    peakCcu: 1450,
+    lifetimeRobux: 2150000,
+    monetizationModel: 'High-Velocity Hybrid: 2x Cash Multiplier GamePass, Speed Sneaker Boots Pass, Golden Egg DevProduct (Consumable), and Rebirth Upgrades.',
+    description: 'Server-authoritative heist arena with 6 dynamic base plots, ProximityPrompt pedestal theft, weight-based speed debuffs, and high-stakes egg returns.',
+    status: 'In Development'
+  },
+  {
     id: 'game-1',
     title: 'Ocean Depths: Deep Sea Fishing',
     genre: 'Simulator / Exploration',
